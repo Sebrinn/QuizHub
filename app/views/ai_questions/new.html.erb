@@ -1,0 +1,267 @@
+<%# app/views/ai_questions/new.html.erb %>
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">✨ Generuj pytania AI dla: <%= @quiz.title %></h4>
+        </div>
+        <div class="card-body">
+          <%= form_with url: classroom_quiz_ai_questions_path(@classroom, @quiz), 
+                      method: :post, 
+                      local: true,
+                      data: { turbo: false },
+                      id: 'generate-form' do |form| %>
+          
+          <div class="mb-3">
+            <%= form.label :prompt, "Opisz tematykę pytań", class: "form-label" %>
+            <%= form.text_area :prompt, 
+                            class: "form-control", 
+                            rows: 4,
+                            placeholder: "np.: 'Podstawy programowania w Ruby - pętle, warunki, metody. Poziom początkujący.'",
+                            required: true,
+                            value: "" %>
+          </div>
+
+          <div class="mb-3">
+            <%= form.label :count, "Liczba pytań do wygenerowania", class: "form-label" %>
+            <%= form.select :count, [1, 2, 3, 5], { selected: params[:count] || 3 }, class: "form-select" %>
+          </div>
+
+          <div class="d-flex gap-2">
+            <%= form.submit "Generuj pytania", class: "btn btn-primary", data: { disable_with: "Generowanie..." } %>
+            <%= link_to "Anuluj", classroom_quiz_path(@classroom, @quiz), class: "btn btn-secondary" %>
+          </div>
+          <% end %>
+        <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="progressModalLabel">🔄 Generowanie pytań</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Ładowanie...</span>
+                    </div>
+                    <p id="progress-text">Przygotowywanie...</p>
+                    <div class="progress mb-3">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                        role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted" id="progress-detail">To może zająć do 30 sekund</small>
+                </div>
+                </div>
+            </div>
+        </div>
+        </div>
+      </div>
+
+      <%# ✅ KOMUNIKATY %>
+      <% if flash[:success] %>
+        <div class="alert alert-success mt-4 alert-dismissible fade show" role="alert">
+          <%= flash[:success] %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% elsif flash[:error] %>
+        <div class="alert alert-danger mt-4 alert-dismissible fade show" role="alert">
+          <%= flash[:error] %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% end %>
+
+      <%# ✅ LISTA WYGENEROWANYCH PYTAŃ %>
+      <% if @ai_questions.is_a?(Array) && @ai_questions.any? %>
+        <div class="card mt-4">
+          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">🎯 Wygenerowane pytania (<%= @ai_questions.size %>)</h5>
+            <div>
+              <%= button_to "✅ Dodaj wszystkie", 
+                          add_all_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
+                          method: :post,
+                          class: "btn btn-light btn-sm me-2",
+                          data: { turbo_confirm: "Na pewno dodać wszystkie #{@ai_questions.size} pytań do quizu?" } %>
+              
+              <%= button_to "🗑️ Wyczyść", 
+                          clear_questions_classroom_quiz_ai_questions_path(@classroom, @quiz),
+                          method: :delete,
+                          class: "btn btn-outline-light btn-sm" %>
+            </div>
+          </div>
+          <div class="card-body">
+            <% @ai_questions.each_with_index do |question_data, index| %>
+              <%# ✅ POPRAWIONE: Sprawdź obie możliwe struktury (symbol i string) %>
+              <% answers = question_data[:answers_attributes] || question_data["answers_attributes"] %>
+              
+              <% if question_data.is_a?(Hash) && answers.is_a?(Array) && answers.any? %>
+                <div class="generated-question mb-4 p-3 border rounded" id="question-<%= index %>">
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="mb-0">Pytanie <%= index + 1 %>:</h6>
+                    <span class="badge bg-primary">Wielokrotny wybór</span>
+                  </div>
+                  
+                  <% content = question_data[:content] || question_data["content"] %>
+                  <p class="fw-bold fs-5 mb-3"><%= content || "Brak treści pytania" %></p>
+                  
+                  <div class="answers">
+                    <% answers.each do |answer| %>
+                      <% answer_content = answer[:content] || answer["content"] %>
+                      <% answer_correct = answer[:correct] || answer["correct"] %>
+                      
+                      <% if answer_content %>
+                        <div class="form-check mb-2">
+                          <input class="form-check-input" type="radio" disabled <%= 'checked' if answer_correct %>>
+                          <label class="form-check-label <%= 'text-success fw-bold' if answer_correct %>">
+                            <%= answer_content %>
+                            <% if answer_correct %> 
+                              <span class="badge bg-success ms-1">Poprawna</span>
+                            <% end %>
+                          </label>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  </div>
+
+                  <div class="mt-3 pt-3 border-top">
+                    <%= button_to "✅ Dodaj to pytanie", 
+                                add_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
+                                method: :post,
+                                params: { 
+                                  question_data: question_data.to_json,
+                                  question_index: index
+                                },
+                                class: "btn btn-success btn-sm me-2",
+                                data: { turbo_confirm: "Na pewno dodać to pytanie do quizu?" } %>
+                    
+                    <button type="button" class="btn btn-outline-secondary btn-sm skip-btn" 
+                           data-question-id="question-<%= index %>">
+                      ❌ Pomiń
+                    </button>
+                  </div>
+                </div>
+              <% else %>
+                <div class="alert alert-warning mb-3">
+                  <strong>Pytanie <%= index + 1 %>:</strong> Niepoprawna struktura danych
+                  <div class="mt-2">
+                    <small class="text-muted">
+                      <strong>Debug info:</strong><br>
+                      question_data: <%= question_data.present? %><br>
+                      answers_attributes: <%= answers.class %><br>
+                      answers count: <%= answers.is_a?(Array) ? answers.size : 'N/A' %>
+                    </small>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% elsif flash[:notice] %>
+        <div class="alert alert-info mt-4">
+          <%= flash[:notice] %>
+          <div class="mt-2">
+            <%= link_to "Generuj więcej pytań", new_classroom_quiz_ai_questions_path(@classroom, @quiz), class: "btn btn-primary btn-sm me-2" %>
+            <%= link_to "Przejdź do quizu", classroom_quiz_path(@classroom, @quiz), class: "btn btn-success btn-sm" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">💡 Przykłady promptów</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small">
+            <li class="mb-2">
+              <strong>Ruby on Rails:</strong><br>
+              <span class="text-muted">"Podstawy MVC, migracje bazy danych, relacje ActiveRecord"</span>
+            </li>
+            <li class="mb-2">
+              <strong>Matematyka:</strong><br>
+              <span class="text-muted">"Równania kwadratowe, funkcje liniowe, pierwiastki"</span>
+            </li>
+            <li class="mb-2">
+              <strong>Historia:</strong><br>
+              <span class="text-muted">"II Wojna Światowa - najważniejsze bitwy, postanowienia"</span>
+            </li>
+            <li class="mb-2">
+              <strong>Biologia:</strong><br>
+              <span class="text-muted">"Fotosynteza - etapy, rola chlorofilu, czynniki"</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const generateForm = document.getElementById('generate-form');
+  const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+  const progressText = document.getElementById('progress-text');
+  const progressBar = document.getElementById('progress-bar');
+  const progressDetail = document.getElementById('progress-detail');
+
+  if (generateForm) {
+    generateForm.addEventListener('submit', function() {
+      // Pokaż modal z postępem
+      progressModal.show();
+      
+      // Rozpocznij śledzenie postępu
+      startProgressTracking();
+    });
+  }
+
+  function startProgressTracking() {
+    const checkProgress = () => {
+      fetch('<%= generating_status_classroom_quiz_ai_questions_path(@classroom, @quiz) %>')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'completed' || data.status === 'not_started') {
+            // Generowanie zakończone - ukryj modal przy następnym przeładowaniu
+            return;
+          }
+
+          // Aktualizuj UI
+          const percent = data.total > 0 ? Math.round((data.current / data.total) * 100) : 0;
+          progressBar.style.width = `${percent}%`;
+          progressText.textContent = `Wygenerowano ${data.current} z ${data.total} pytań`;
+          progressDetail.textContent = `${percent}% ukończono`;
+
+          // Kontynuuj sprawdzanie co sekundę
+          setTimeout(checkProgress, 1000);
+        })
+        .catch(error => {
+          console.error('Error checking progress:', error);
+          // Próba ponownia po błędzie
+          setTimeout(checkProgress, 2000);
+        });
+    };
+
+    // Rozpocznij śledzenie po krótkim opóźnieniu (daj czas na inicjalizację)
+    setTimeout(checkProgress, 500);
+  }
+
+  // Ukrywanie pominiętych pytań (istniejący kod)
+  document.querySelectorAll('.skip-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const questionId = this.getAttribute('data-question-id');
+      const questionElement = document.getElementById(questionId);
+      if (questionElement) {
+        questionElement.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+
+<style>
+.progress-bar-animated {
+  animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+  0% { background-position-x: 1rem; }
+}
+</style>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+</head>
+<body>
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <h2 style="color: #9b59b6;">QuizHub</h2>
+    
+    <p><strong><%= t('.hello', email: @email) %></strong></p>
+    
+    <p><%= t('.message', email: @resource.unconfirmed_email? ? @resource.unconfirmed_email : @resource.email) %></p>
+    
+    <% if @resource.try(:unconfirmed_email?) %>
+      <p style="color: #666; font-size: 14px;">
+        <strong>Uwaga:</strong> Nowy adres email wymaga potwierdzenia. Sprawdź swoją skrzynkę email i kliknij w link potwierdzający.
+      </p>
+    <% end %>
+    
+    <p style="color: #e74c3c; font-weight: bold;">
+      <%= t('.warning') %>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+    <p style="color: #999; font-size: 12px;">
+      To jest automatyczna wiadomość, prosimy na nią nie odpowiadać.
+    </p>
+  </div>
+</body>
+</html>

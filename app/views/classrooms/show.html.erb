@@ -1,0 +1,133 @@
+<div class="container mt-5">
+  <h2><%= @classroom.name %></h2>
+  <p><%= @classroom.description %></p>
+
+  <% if policy(@classroom).destroy? %>
+    <%= button_to "Usuń klasę", classroom_path(@classroom),
+                  method: :delete,
+                  data: { "turbo-confirm": "Na pewno chcesz usunąć tę klasę?" },
+                  class: "btn btn-danger mb-3" %>
+  <% end %>
+
+  <!-- Sekcja quizów -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4>Quizy</h4>
+      <% if (current_user.teacher? && @classroom.teacher == current_user) %>
+        <%= link_to "Nowy Quiz", new_classroom_quiz_path(@classroom), class: "btn btn-primary" %>
+      <% end %>
+    </div>
+
+    <% if @quizzes.any? %>
+      <div class="row">
+        <% @quizzes.each do |quiz| %>
+          <div class="col-md-6 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title"><%= quiz.title %></h5>
+                <p class="card-text text-muted"><%= quiz.description %></p>
+                
+                <!-- Status quizu -->
+                <span class="badge bg-<%= status_badge_color(quiz.status) %> mb-2">
+                  <%= quiz_status_text(quiz.status) %>
+                </span>
+
+                <!-- Informacje o czasie -->
+                <% if quiz.start_time %>
+                  <p class="card-text small">
+                    <strong>Start:</strong> <%= l(quiz.start_time, format: :long) %><br>
+                    <strong>Koniec:</strong> <%= l(quiz.end_time, format: :long) %>
+                  </p>
+                <% end %>
+
+                <!-- Akcje -->
+                <div class="d-flex gap-2 flex-wrap">
+                  <% if current_user.student? %>
+                    <% if policy(quiz).start? %>
+                    <%= button_to "Rozpocznij", start_classroom_quiz_path(@classroom, quiz),
+                                  method: :post,
+                                  class: "btn btn-sm btn-success" %>
+                    <% elsif policy(quiz).results? %>
+                      <%= link_to "Wynik", results_classroom_quiz_path(@classroom, quiz), 
+                                  class: "btn btn-sm btn-info" %>
+                    <% else %>
+                      <span class="text-muted small">
+                        <% case quiz.status %>
+                        <% when :upcoming %>
+                          Dostępny od <%= quiz.start_time.strftime("%d.%m.%Y %H:%M") %>
+                        <% when :finished %>
+                          Quiz zakończony
+                        <% when :draft %>
+                          Quiz w przygotowaniu
+                        <% end %>
+                      </span>
+                    <% end %>
+                  <% else %>
+                    <%= link_to "Szczegóły", classroom_quiz_path(@classroom, quiz), class: "btn btn-sm btn-outline-primary" %>
+                    
+                    <% if policy(quiz).edit? %>
+                      <%= link_to "Edytuj", edit_classroom_quiz_path(@classroom, quiz), class: "btn btn-sm btn-outline-secondary" %>
+                    <% end %>
+
+                    <% if current_user.student? && policy(quiz).start? %>
+                      <%= link_to "Rozpocznij", start_classroom_quiz_path(@classroom, quiz), class: "btn btn-sm btn-success" %>
+                    <% end %>
+
+                    <% if policy(quiz).results? %>
+                      <%= link_to "Wyniki", results_classroom_quiz_path(@classroom, quiz), class: "btn btn-sm btn-info" %>
+                    <% end %>
+
+                    <!-- Aktywacja/deaktywacja dla nauczyciela -->
+                    <% if policy(quiz).activate? || policy(quiz).deactivate? %>
+                      <% if quiz.active? %>
+                        <%= button_to "Deaktywuj", deactivate_classroom_quiz_path(@classroom, quiz), 
+                                      method: :patch, 
+                                      class: "btn btn-sm btn-warning" %>
+                      <% else %>
+                        <%= button_to "Aktywuj", activate_classroom_quiz_path(@classroom, quiz), 
+                                      method: :patch, 
+                                      class: "btn btn-sm btn-success" %>
+                      <% end %>
+                    <% end %>
+                    
+                    <% if policy(quiz).destroy? %>
+                      <%= button_to "Usuń quiz", classroom_quiz_path(@classroom, quiz),
+                                method: :delete,
+                                data: { "turbo-confirm": "Na pewno chcesz usunąć ten quiz?" },
+                                class: "btn btn-sm btn-danger" %>
+                    <% end %>
+                 <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="alert alert-info">
+        Brak quizów w tej klasie.
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Sekcja uczniów -->
+  <h4>Uczniowie</h4>
+  <ul class="list-group mb-3">
+    <% @classroom.students.each do |student| %>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <%= student.full_name %>
+        
+        <% if policy(@classroom).remove_student? %>
+          <%= button_to "Usuń", remove_student_classroom_path(@classroom, student_id: student.id),
+                      method: :delete,
+                      data: { "turbo-confirm": "Na pewno chcesz usunąć ucznia?" },
+                      class: "btn btn-sm btn-outline-danger" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+
+  <% if current_user.teacher? %>
+    <h5>Kod zaproszenia: <code><%= @classroom.invite_code %></code></h5>
+  <% end %>
+</div>

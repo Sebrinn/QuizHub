@@ -1,0 +1,32 @@
+<!-- app/views/invitation_mailer/teacher_invitation.html.erb -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+</head>
+<body>
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <h2 style="color: #27ae60;">QuizHub</h2>
+    
+    <p><strong>Witaj!</strong></p>
+    
+    <p>Zostałeś zaproszony do platformy QuizHub jako <strong><%= @invitation.teacher? ? 'Nauczyciel' : 'Uczeń' %></strong>.</p>
+    
+    <p>Aby założyć konto, kliknij w link poniżej:</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <%= link_to 'Akceptuj zaproszenie', new_user_registration_url(invitation_token: @invitation.token), 
+          style: "background: #27ae60; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;" %>
+    </div>
+    
+    <p style="color: #666; font-size: 14px;">
+      Zaproszenie wygasa: <strong><%= @invitation.expires_at.strftime("%d.%m.%Y") %></strong>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+    <p style="color: #999; font-size: 12px;">
+      To jest automatyczna wiadomość, prosimy na nią nie odpowiadać.
+    </p>
+  </div>
+</body>
+</html>

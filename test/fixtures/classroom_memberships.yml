@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  classroom: one
+  user: one
+  joined_at: 2025-10-17 13:18:38
+
+two:
+  classroom: two
+  user: two
+  joined_at: 2025-10-17 13:18:38

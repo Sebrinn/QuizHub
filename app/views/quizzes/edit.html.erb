@@ -1,0 +1,95 @@
+<%# app/views/quizzes/new.html.erb %>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">Nowy Quiz w klasie: <%= @classroom.name %></h4>
+        </div>
+        <div class="card-body">
+          <%= form_with model: [@classroom, @quiz], local: true do |form| %>
+            <% if @quiz.errors.any? %>
+              <div class="alert alert-danger">
+                <h5><%= pluralize(@quiz.errors.count, "błąd") %> uniemożliwia zapisanie quizu:</h5>
+                <ul>
+                  <% @quiz.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+
+            <!-- Podstawowe informacje -->
+            <div class="mb-3">
+              <%= form.label :title, "Tytuł quizu", class: "form-label" %>
+              <%= form.text_field :title, class: "form-control", placeholder: "Wprowadź tytuł quizu..." %>
+            </div>
+
+            <div class="mb-3">
+              <%= form.label :description, "Opis", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 3, placeholder: "Opisz czego dotyczy quiz..." %>
+            </div>
+
+            <!-- Ustawienia czasu -->
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <%= form.label :start_time, "Czas rozpoczęcia", class: "form-label" %>
+                  <%= form.datetime_local_field :start_time, class: "form-control" %>
+                  <div class="form-text">Kiedy quiz stanie się dostępny dla uczniów</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <%= form.label :end_time, "Czas zakończenia", class: "form-label" %>
+                  <%= form.datetime_local_field :end_time, class: "form-control" %>
+                  <div class="form-text">Kiedy quiz przestanie być dostępny</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Limity czasu -->
+            <div class="mb-3">
+              <%= form.label :time_limit, "Limit czasu (minuty)", class: "form-label" %>
+              <%= form.number_field :time_limit, class: "form-control", min: 0, placeholder: "0 = bez limitu czasu" %>
+              <div class="form-text">Czas na rozwiązanie całego quizu. 0 oznacza brak limitu.</div>
+            </div>
+
+            <!-- Dodatkowe opcje -->
+            <div class="mb-4">
+              <div class="form-check">
+                <%= form.check_box :shuffle_questions, class: "form-check-input" %>
+                <%= form.label :shuffle_questions, "Losowa kolejność pytań", class: "form-check-label" %>
+                <div class="form-text">Każdy uczeń otrzyma pytania w losowej kolejności</div>
+              </div>
+
+              <div class="form-check mt-2">
+                <%= form.check_box :active, class: "form-check-input" %>
+                <%= form.label :active, "Aktywny", class: "form-check-label" %>
+                <div class="form-text">Quiz będzie widoczny dla uczniów</div>
+              </div>
+            </div>
+
+            <!-- Przyciski -->
+            <div class="d-flex gap-2">
+              <%= form.submit "Edytuj Quiz", class: "btn btn-primary" %>
+              <%= link_to "Anuluj", classroom_path(@classroom), class: "btn btn-secondary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Informacja pomocnicza -->
+      <div class="card mt-3">
+        <div class="card-body">
+          <h6>Informacje:</h6>
+          <ul class="small text-muted mb-0">
+            <li>Po utworzeniu quizu będziesz mógł dodać pytania i odpowiedzi</li>
+            <li>Quiz można aktywować/deaktywować w dowolnym momencie</li>
+            <li>Ustawienia czasu można zmienić później</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<div class="container mt-5">
+  <h2>Nowa klasa</h2>
+
+  <%= form_with model: @classroom, local: true do |f| %>
+    <div class="mb-3">
+      <%= f.label :name, "Nazwa klasy" %>
+      <%= f.text_field :name, class: "form-control" %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :description, "Opis" %>
+      <%= f.text_area :description, class: "form-control" %>
+    </div>
+
+    <%= f.submit "Utwórz klasę", class: "btn btn-success" %>
+  <% end %>
+</div>

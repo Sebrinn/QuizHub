@@ -1,0 +1,53 @@
+<!-- app/views/admin/invitations/index.html.erb -->
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Zaproszenia</h2>
+    <% if policy(Invitation.new).new? %>
+      <%= link_to "Nowe zaproszenie", new_admin_invitation_path, class: "btn btn-success" %>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Rola</th>
+            <th>Status</th>
+            <th>Wysłane przez</th>
+            <th>Wygasa</th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @invitations.each do |invitation| %>
+            <tr>
+              <td><%= invitation.email %></td>
+              <td>
+                <span class="badge bg-<%= invitation.teacher? ? 'success' : 'primary' %>">
+                  <%= invitation.role %>
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-<%= invitation_status_badge(invitation) %>">
+                  <%= invitation.status %>
+                </span>
+              </td>
+              <td><%= invitation.invited_by.email %></td>
+              <td><%= invitation.expires_at.strftime("%d.%m.%Y") %></td>
+              <td>
+                <% if policy(invitation).destroy? && invitation.pending? %>
+                  <%= button_to "Anuluj", admin_invitation_path(invitation), 
+                      method: :delete, 
+                      class: "btn btn-sm btn-outline-danger",
+                      data: { confirm: "Na pewno chcesz anulować to zaproszenie?" } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

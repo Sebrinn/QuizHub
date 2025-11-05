@@ -1,0 +1,202 @@
+<%# app/views/quizzes/results.html.erb %>
+<div class="container mt-5">
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Wyniki quizu: <%= @quiz.title %></h4>
+        <%= link_to "Powrót do quizu", classroom_quiz_path(@classroom, @quiz), class: "btn btn-outline-secondary btn-sm" %>
+      </div>
+    </div>
+    
+    <div class="card-body">
+      <!-- Wynik obecnego użytkownika -->
+      <% user_result = @quiz.quiz_results.active.find_by(user: current_user) %>
+      <% if user_result %>
+        <div class="alert alert-info">
+          <h5>Twój wynik</h5>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong><%= user_result.score %> / <%= user_result.total %> punktów</strong>
+              <span class="badge bg-<%= result_percentage_color(user_result.score, user_result.total) %> ms-2">
+                <%= number_to_percentage((user_result.score.to_f / user_result.total) * 100, precision: 1) %>
+              </span>
+              <span class="badge bg-<%= result_status_badge(user_result.status) %> ms-1">
+                <%= result_status_text(user_result.status) %>
+              </span>
+            </div>
+            <small class="text-muted">
+              Rozwiązano: <%= user_result.created_at.strftime("%d.%m.%Y %H:%M") %>
+            </small>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Tabela wszystkich wyników -->
+      <% if @quiz_results.any? %>
+        <h5 class="mt-4">
+          <% if current_user.teacher? || current_user.admin? %>
+            Wszystkie wyniki (<%= @quiz_results.count %>)
+          <% else %>
+            Ranking
+          <% end %>
+        </h5>
+
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Użytkownik</th>
+                <th>Wynik</th>
+                <th>Procent</th>
+                <th>Status</th>
+                <th>Data</th>
+                <% if current_user.teacher? || current_user.admin? %>
+                  <th>Akcje</th>
+                <% end %>
+              </tr>
+            </thead>
+            <tbody>
+              <% @quiz_results.each_with_index do |result, index| %>
+                <tr class="<%= 'table-info' if result.user == current_user %>">
+                  <td><%= index + 1 %></td>
+                  <td>
+                    <%= result.user.full_name %>
+                    <% if result.user == current_user %>
+                      <span class="badge bg-primary ms-1">Ty</span>
+                    <% end %>
+                  </td>
+                  <td><strong><%= result.score %> / <%= result.total %></strong></td>
+                  <td>
+                    <span class="badge bg-<%= result_percentage_color(result.score, result.total) %>">
+                      <%= number_to_percentage((result.score.to_f / result.total) * 100, precision: 1) %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-<%= result_status_badge(result.status) %>">
+                      <%= result_status_text(result.status) %>
+                    </span>
+                  </td>
+                  <td><%= result.created_at.strftime("%d.%m.%Y %H:%M") %></td>
+                  <% if current_user.teacher? || current_user.admin? %>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <%= link_to "Szczegóły", details_quiz_result_path(result), 
+                                  class: "btn btn-outline-primary" %>
+                      
+                      <% if policy(result).deactivate? && result.active? %>
+                        <%= button_to "Deaktywuj", deactivate_quiz_result_path(result),
+                                      method: :patch,
+                                      data: { turbo_confirm: "Dezaktywować to rozwiązanie?" },
+                                      class: "btn btn-outline-warning" %>
+                      <% end %>
+                      
+                      <% if policy(result).allow_retake? %>
+                        <%= button_to "Ponowne podejście", allow_retake_quiz_result_path(result),
+                                      method: :patch,
+                                      data: { turbo_confirm: "Zezwolić na ponowne podejście? Stare rozwiązanie zostanie oznaczone jako zastąpione." },
+                                      class: "btn btn-outline-success" %>
+                      <% end %>
+                    </div>
+                  </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Statystyki dla nauczyciela/admina -->
+        <% if current_user.teacher? || current_user.admin? %>
+          <div class="mt-5">
+            <h5>Statystyki quizu</h5>
+            <div class="row">
+              <div class="col-md-3">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-primary"><%= @quiz_results.active.count %></h5>
+                    <p class="card-text">Aktywnych rozwiązań</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-success"><%= @best_score %>%</h5>
+                    <p class="card-text">Najlepszy wynik</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-warning"><%= @average_score %>%</h5>
+                    <p class="card-text">Średni wynik</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-danger"><%= @worst_score %>%</h5>
+                    <p class="card-text">Najsłabszy wynik</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Dodatkowe statystyki statusów -->
+            <div class="row mt-3">
+              <div class="col-md-4">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-info"><%= @quiz_results.active.count %></h5>
+                    <p class="card-text">Aktywne</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-secondary"><%= @quiz_results.inactive.count %></h5>
+                    <p class="card-text">Dezaktywowane</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-warning"><%= @quiz_results.retaken.count %></h5>
+                    <p class="card-text">Zastąpione</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+      <% else %>
+        <div class="alert alert-warning text-center">
+          <h5>Brak wyników</h5>
+          <p class="mb-0">Nikt jeszcze nie rozwiązał tego quizu.</p>
+        </div>
+      <% end %>
+
+      <div class="mt-4">
+        <%= link_to "Powrót do klasy", classroom_path(@classroom), class: "btn btn-secondary" %>
+        <% if policy(@quiz).solve? && @quiz.status == :ongoing && !user_result %>
+            <%= button_to "Rozpocznij", start_classroom_quiz_path(@classroom, @quiz),
+                        method: :post,
+                        class: "btn btn-sm btn-success" %>
+        <% elsif policy(@quiz).solve? && @quiz.status == :ongoing && user_result&.inactive? %>
+          <div class="alert alert-warning mt-3">
+            <p>Twoje poprzednie rozwiązanie zostało dezaktywowane przez nauczyciela. Możesz podejść do quizu ponownie.</p>
+            <%= link_to "Rozpocznij quiz ponownie", start_classroom_quiz_path(@classroom, @quiz), 
+                        class: "btn btn-primary",
+                        data: { turbo: false } %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

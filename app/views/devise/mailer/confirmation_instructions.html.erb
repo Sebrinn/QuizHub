@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+</head>
+<body>
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <h2 style="color: #3498db;">QuizHub</h2>
+    
+    <p><strong><%= t('.welcome', email: @email) %></strong></p>
+    
+    <p><%= t('.instruction') %></p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <%= link_to t('.action'), confirmation_url(@resource, confirmation_token: @token), 
+          style: "background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;" %>
+    </div>
+    
+    <p style="color: #666; font-size: 14px;">
+      Jeśli przycisk nie działa, skopiuj ten link:<br>
+      <code style="background: #f8f9fa; padding: 5px; border-radius: 3px;">
+        <%= confirmation_url(@resource, confirmation_token: @token) %>
+      </code>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+    <p style="color: #999; font-size: 12px;">
+      To jest automatyczna wiadomość, prosimy na nią nie odpowiadać.
+    </p>
+  </div>
+</body>
+</html>

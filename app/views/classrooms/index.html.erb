@@ -1,0 +1,33 @@
+<div class="container mt-5">
+  <h2>Moje klasy</h2>
+
+  <% if current_user.teacher? %>
+    <%= link_to "➕ Utwórz nową klasę", new_classroom_path, class: "btn btn-success mb-3" %>
+  <% end %>
+
+  <% if current_user.student? %>
+    <div class="card mb-4 p-3">
+      <h5>Dołącz do klasy</h5>
+      <%= form_with url: join_classrooms_path, method: :post, local: true do %>
+        <div class="input-group">
+          <%= text_field_tag :invite_code, nil, class: "form-control", placeholder: "Wpisz kod zaproszenia" %>
+          <%= submit_tag "Dołącz", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="row">
+    <% @classrooms.each do |classroom| %>
+      <div class="col-md-4 mb-3">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title"><%= classroom.name %></h5>
+            <p><%= truncate(classroom.description, length: 100) %></p>
+            <%= link_to "Zobacz", classroom_path(classroom), class: "btn btn-outline-success btn-sm" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

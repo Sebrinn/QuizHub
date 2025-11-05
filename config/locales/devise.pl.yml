@@ -1,0 +1,142 @@
+pl:
+  devise:
+    confirmations:
+      confirmed: "Twój adres email został pomyślnie potwierdzony."
+      send_instructions: "Otrzymasz wiadomość email z instrukcjami potwierdzenia swojego konta w ciągu kilku minut."
+      send_paranoid_instructions: "Jeśli Twój adres email znajduje się w naszej bazie danych, otrzymasz wiadomość email z instrukcjami potwierdzenia swojego konta w ciągu kilku minut."
+    failure:
+      already_authenticated: "Jesteś już zalogowany."
+      inactive: "Twoje konto nie jest jeszcze aktywowane."
+      invalid: "Nieprawidłowy adres email lub hasło."
+      locked: "Twoje konto jest zablokowane."
+      not_found_in_database: "Nieprawidłowy adres email lub hasło."
+      timeout: "Twoja sesja wygasła. Proszę zaloguj się ponownie."
+      unauthenticated: "Musisz się zalogować lub zarejestrować, zanim przejdziesz dalej."
+      unconfirmed: "Musisz potwierdzić swoje konto, zanim przejdziesz dalej."
+    mailer:
+      confirmation_instructions:
+        subject: "Potwierdzenie konta w QuizHub"
+        welcome: "Witaj %{email}!"
+        instruction: "Dziękujemy za rejestrację! Kliknij link poniżej aby aktywować konto:"
+        action: "Aktywuj konto"
+      reset_password_instructions:
+        subject: "Resetowanie hasła w QuizHub"
+        hello: "Witaj %{email}!"
+        instruction: "Ktoś poprosił o link do zmiany hasła. Możesz to zrobić przez link poniżej:"
+        action: "Zmień moje hasło"
+        ignore: "Jeśli to nie Ty, zignoruj tego emaila."
+        warning: "Twoje hasło nie zmieni się dopóki nie klikniesz w link i nie utworzysz nowego."
+      unlock_instructions:
+        subject: "Odblokowanie konta w QuizHub"
+        hello: "Witaj %{email}!"
+        instruction: "Kliknij link poniżej aby odblokować konto:"
+        action: "Odblokuj moje konto"
+      email_changed:
+        subject: "Email został zmieniony"
+        hello: "Witaj %{email}!"
+        message: "Informujemy, że adres email Twojego konta został zmieniony na %{email}."
+        warning: "Jeśli to nie Ty, prosimy o natychmiastowy kontakt."
+      password_change:
+        subject: "Hasło zostało zmienione"
+        hello: "Witaj %{email}!"
+        message: "Informujemy, że hasło do Twojego konta zostało zmienione."
+    omniauth_callbacks:
+      failure: "Nie udało się zalogować za pomocą %{kind} ponieważ \"%{reason}\"."
+      success: "Pomyślnie zalogowano za pomocą konta %{kind}."
+    passwords:
+      no_token: "Ta strona jest dostępna tylko z linku resetowania hasła. Jeśli kliknąłeś taki link, upewnij się, że używasz pełnego adresu URL."
+      send_instructions: "Otrzymasz wiadomość email z instrukcjami resetowania hasła w ciągu kilku minut."
+      send_paranoid_instructions: "Jeśli Twój adres email znajduje się w naszej bazie danych, otrzymasz link do resetowania hasła na swoją skrzynkę email."
+      updated: "Twoje hasło zostało pomyślnie zmienione. Jesteś teraz zalogowany."
+      updated_not_active: "Twoje hasło zostało pomyślnie zmienione."
+    registrations:
+      destroyed: "Do widzenia! Twoje konto zostało pomyślnie anulowane. Mamy nadzieję, że zobaczymy się wkrótce."
+      signed_up: "Witaj! Zarejestrowałeś się pomyślnie."
+      signed_up_but_inactive: "Zarejestrowałeś się pomyślnie. Nie można jednak zalogować się, ponieważ konto nie jest jeszcze aktywowane."
+      signed_up_but_locked: "Zarejestrowałeś się pomyślnie. Nie można jednak zalogować się, ponieważ konto jest zablokowane."
+      signed_up_but_unconfirmed: "Wiadomość z linkiem potwierdzającym została wysłana na Twój adres email. Otwórz link, aby aktywować konto."
+      update_needs_confirmation: "Zaktualizowałeś swoje konto pomyślnie, ale musimy zweryfikować Twój nowy adres email. Sprawdź swoją skrzynkę email i kliknij w link potwierdzający, aby aktywować nowy adres email."
+      updated: "Twoje konto zostało pomyślnie zaktualizowane."
+      updated_but_not_signed_in: "Twoje konto zostało pomyślnie zaktualizowane, ale ponieważ zmieniłeś hasło, musisz zalogować się ponownie."
+    sessions:
+      signed_in: "Zalogowano pomyślnie."
+      signed_out: "Wylogowano pomyślnie."
+      already_signed_out: "Wylogowano pomyślnie."
+    unlocks:
+      send_instructions: "Otrzymasz wiadomość email z instrukcjami odblokowania konta w ciągu kilku minut."
+      send_paranoid_instructions: "Jeśli Twoje konto istnieje, otrzymasz wiadomość email z instrukcjami odblokowania go w ciągu kilku minut."
+      unlocked: "Twoje konto zostało pomyślnie odblokowane. Proszę zaloguj się, aby kontynuować."
+    shared:
+      links:
+        sign_in: "Zaloguj się"
+        sign_up: "Zarejestruj się"
+        forgot_your_password: "Zapomniałeś hasła?"
+        didn_t_receive_confirmation_instructions: "Nie otrzymałeś instrukcji potwierdzenia?"
+        didn_t_receive_unlock_instructions: "Nie otrzymałeś instrukcji odblokowania?"
+        send_me_reset_password_instructions: "Wyślij mi instrukcje resetowania hasła"
+  errors:
+    messages:
+      already_confirmed: "już potwierdzony, proszę spróbować zalogować się"
+      confirmation_period_expired: "musi zostać potwierdzony w ciągu %{period}, proszę poproś o nowy"
+      expired: "stracił ważność, proszę poproś o nowy"
+      not_found: "nie znaleziono"
+      not_locked: "nie został zablokowany"
+      not_saved:
+        one: "1 błąd uniemożliwił zapisanie %{resource}:"
+        other: "%{count} błędów uniemożliwiło zapisanie %{resource}:"
+  time:
+    formats:
+      short: "%d.%m.%Y %H:%M"
+      long: "%d %B %Y, %H:%M"
+  date:
+    formats:
+      short: "%d.%m.%Y"
+      long: "%d %B %Y"
+    day_names:
+      - niedziela
+      - poniedziałek
+      - wtorek
+      - środa
+      - czwartek
+      - piątek
+      - sobota
+    abbr_day_names:
+      - niedz.
+      - pon.
+      - wt.
+      - śr.
+      - czw.
+      - pt.
+      - sob.
+    month_names:
+      - ~
+      - styczeń
+      - luty
+      - marzec
+      - kwiecień
+      - maj
+      - czerwiec
+      - lipiec
+      - sierpień
+      - wrzesień
+      - październik
+      - listopad
+      - grudzień
+    abbr_month_names:
+      - ~
+      - sty
+      - lut
+      - mar
+      - kwi
+      - maj
+      - cze
+      - lip
+      - sie
+      - wrz
+      - paź
+      - lis
+      - gru
+    order:
+      - :day
+      - :month
+      - :year

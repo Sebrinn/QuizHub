@@ -1,0 +1,190 @@
+<%# app/views/quizzes/show.html.erb %>
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0"><%= @quiz.title %></h4>
+          <span class="badge bg-<%= status_badge_color(@quiz.status) %>">
+            <%= quiz_status_text(@quiz.status) %>
+          </span>
+        </div>
+        <div class="card-body">
+          <p class="card-text"><%= @quiz.description %></p>
+
+          <% if @quiz.start_time %>
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Start:</strong> <%= @quiz.start_time.strftime("%d.%m.%Y %H:%M") %></p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Koniec:</strong> <%= @quiz.end_time.strftime("%d.%m.%Y %H:%M") %></p>
+              </div>
+            </div>
+          <% end %>
+
+          <% if @quiz.time_limit && @quiz.time_limit > 0 %>
+            <p><strong>Limit czasu:</strong> <%= @quiz.time_limit %> minut</p>
+          <% end %>
+
+          <p>
+            <strong>Losowa kolejność pytań:</strong> 
+            <%= @quiz.shuffle_questions ? 'Tak' : 'Nie' %>
+          </p>
+
+          <div class="mt-4">
+            <h5>Pytania: <%= @quiz.questions.count %></h5>
+            
+            <% if @quiz.questions.any? %>
+            <div class="list-group mt-3">
+                <% @quiz.questions.each_with_index do |question, index| %>
+                <div class="list-group-item" id="question-<%= question.id %>">
+                    <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">Pytanie <%= index + 1 %>: <%= question.content %></h6>
+                        <p class="mb-1 small text-muted">Typ: <%= question.question_type %></p>
+                        <p class="mb-1 small">Odpowiedzi: <%= question.answers.count %></p>
+                        <% correct_answers = question.answers.where(correct: true) %>
+                        <% if correct_answers.any? %>
+                        <p class="mb-0 small text-success">
+                            Poprawne odpowiedzi: <%= correct_answers.map(&:content).join(', ') %>
+                        </p>
+                        <% end %>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <%= link_to 'Edytuj', edit_classroom_quiz_question_path(@classroom, @quiz, question), class: 'btn btn-outline-secondary' %>
+                        <%= button_to 'Usuń', classroom_quiz_question_path(@classroom, @quiz, question), 
+                                    method: :delete, 
+                                    data: { turbo_confirm: 'Na pewno chcesz usunąć to pytanie?' },
+                                    class: 'btn btn-outline-danger' %>
+                    </div>
+                    </div>
+                </div>
+                <% end %>
+            </div>
+            <% else %>
+            <div class="alert alert-info">
+                Brak pytań w tym quizie.
+            </div>
+            <% end %>
+
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="d-flex gap-2 flex-wrap">
+            <% if policy(@quiz).edit? %>
+            <%= link_to "Edytuj quiz", edit_classroom_quiz_path(@classroom, @quiz), class: "btn btn-primary" %>
+            <%= link_to "Dodaj pytanie", new_classroom_quiz_question_path(@classroom, @quiz), class: "btn btn-success" %>
+            <%= link_to "✨ Generuj AI", new_classroom_quiz_ai_questions_path(@classroom, @quiz), class: "btn btn-warning" %>
+            <% end %>
+
+            <% if current_user.student? && policy(@quiz).start? %>
+              <%= link_to "Rozpocznij quiz", start_classroom_quiz_path(@classroom, @quiz), class: "btn btn-success" %>
+            <% end %>
+
+            <% if policy(@quiz).results? %>
+              <%= link_to "Wyniki", results_classroom_quiz_path(@classroom, @quiz), class: "btn btn-info" %>
+            <% end %>
+
+            <%= link_to "Powrót do klasy", classroom_path(@classroom), class: "btn btn-secondary" %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Statystyki</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Liczba pytań:</strong> <%= @quiz.questions.count %></p>
+          <p><strong>Liczba rozwiązań:</strong> <%= @quiz.quiz_results.count %></p>
+          
+          <% if @quiz.quiz_results.any? %>
+            <p><strong>Średni wynik:</strong> 
+              <%= number_to_percentage(@quiz.quiz_results.average(:score).to_f / @quiz.quiz_results.average(:total).to_f * 100, precision: 1) %>
+            </p>
+          <% end %>
+        </div>
+      </div>
+
+      <% if policy(@quiz).activate? || policy(@quiz).deactivate? %>
+        <div class="card mt-3">
+          <div class="card-header">
+            <h5 class="mb-0">Zarządzanie</h5>
+          </div>
+          <div class="card-body">
+            <% if @quiz.active? %>
+              <%= button_to "Deaktywuj quiz", deactivate_classroom_quiz_path(@classroom, @quiz), 
+                          method: :patch, 
+                          class: "btn btn-warning btn-sm w-100" %>
+            <% else %>
+              <%= button_to "Aktywuj quiz", activate_classroom_quiz_path(@classroom, @quiz), 
+                          method: :patch, 
+                          class: "btn btn-success btn-sm w-100" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+console.log('=== DEBUG ANCHOR ===');
+console.log('Current URL:', window.location.href);
+console.log('Hash:', window.location.hash);
+
+// Dla Turbo
+document.addEventListener('turbo:load', function() {
+  console.log('TURBO LOAD - Hash:', window.location.hash);
+  handleAnchorNavigation();
+});
+
+// Dla normalnego ładowania (na wypadek)
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM CONTENT LOADED - Hash:', window.location.hash);
+  handleAnchorNavigation();
+});
+
+function handleAnchorNavigation() {
+  const hash = window.location.hash;
+  console.log('Handling hash:', hash);
+  
+  if (hash) {
+    // Turbo potrzebuje czasu na render - dajemy opóźnienie
+    setTimeout(() => {
+      const targetElement = document.querySelector(hash);
+      console.log('Target element after delay:', targetElement);
+      
+      if (targetElement) {
+        console.log('✅ FOUND ELEMENT - adding highlight');
+        targetElement.classList.add('question-highlight');
+        
+        // Przewiń do elementu
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'center'
+        });
+        
+        // Usuń podświetlenie po 3 sekundach
+        setTimeout(() => {
+          console.log('Removing highlight');
+          targetElement.classList.remove('question-highlight');
+        }, 3000);
+      } else {
+        console.log('❌ ELEMENT NOT FOUND with selector:', hash);
+        
+        // Debug: pokaż wszystkie elementy z ID
+        const allIds = document.querySelectorAll('[id]');
+        console.log('All IDs on page:');
+        allIds.forEach(el => console.log(`- ${el.id}`));
+      }
+    }, 300); // Opóźnienie dla Turbo
+  }
+}
+
+// Uruchom też bezpośrednio (na wypadek)
+setTimeout(handleAnchorNavigation, 500);
+</script>

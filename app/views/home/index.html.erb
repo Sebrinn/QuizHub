@@ -1,0 +1,22 @@
+<!-- app/views/home/index.html.erb -->
+<div style="max-width: 600px; margin: 100px auto; text-align: center; padding: 20px;">
+  <h1>🎯 QuizHub</h1>
+  <p style="font-size: 1.2em; margin: 20px 0;">Platforma edukacyjna do quizów</p>
+  
+  <% if user_signed_in? %>
+    <p>Witaj <strong><%= current_user.first_name %>!</strong></p>
+    <p>Twoja rola: <strong><%= current_user.role %></strong></p>
+    
+    <%= link_to "Wyloguj się", destroy_user_session_path, 
+                data: { turbo_method: :delete },
+                style: "background: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;" %>
+  <% else %>
+    <div style="margin: 30px 0;">
+      <%= link_to "Zaloguj się", new_user_session_path, 
+                  style: "background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 0 10px;" %>
+      
+      <%= link_to "Zarejestruj się", new_user_registration_path,
+                  style: "background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 0 10px;" %>
+    </div>
+  <% end %>
+</div>

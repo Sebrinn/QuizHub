@@ -1,0 +1,113 @@
+<%# app/views/questions/edit.html.erb %>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">Edytuj pytanie w: <%= @quiz.title %></h4>
+        </div>
+        <div class="card-body">
+          <%= form_with model: [@classroom, @quiz, @question], local: true do |form| %>
+            <% if @question.errors.any? %>
+              <div class="alert alert-danger">
+                <h5><%= pluralize(@question.errors.count, "błąd") %> uniemożliwia zapisanie pytania:</h5>
+                <ul>
+                  <% @question.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+
+            <div class="mb-3">
+              <%= form.label :content, "Treść pytania", class: "form-label" %>
+              <%= form.text_area :content, class: "form-control", rows: 3, required: true %>
+            </div>
+
+            <div class="mb-3">
+              <%= form.label :question_type, "Typ pytania", class: "form-label" %>
+              <%= form.select :question_type, 
+                            [['Wielokrotny wybór', 'multiple_choice'], ['Otwarte', 'open_ended']], 
+                            {}, 
+                            class: "form-select",
+                            disabled: @question.persisted? %>
+              <% if @question.persisted? %>
+                <div class="form-text text-warning">
+                  Nie można zmienić typu pytania po jego utworzeniu.
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Sekcja odpowiedzi - tylko dla multiple choice -->
+            <% if @question.multiple_choice? %>
+              <div class="mb-4">
+                <h5>Odpowiedzi</h5>
+                <p class="text-muted small">
+                Zaznacz poprawne odpowiedzi. <strong class="text-danger">Pytanie musi mieć przynajmniej jedną poprawną odpowiedź i co najmniej dwie odpowiedzi w sumie.</strong>
+                Puste odpowiedzi będą ignorowane. Aby usunąć istniejącą odpowiedź, zaznacz "Usuń".
+                </p>
+                
+                <%= form.fields_for :answers do |answer_form| %>
+                  <div class="card mb-2">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="form-check me-3">
+                          <%= answer_form.check_box :correct, class: "form-check-input" %>
+                          <%= answer_form.label :correct, "Poprawna", class: "form-check-label" %>
+                        </div>
+                        <div class="flex-grow-1 me-3">
+                          <%= answer_form.text_field :content, class: "form-control", placeholder: "Wprowadź odpowiedź..." %>
+                          <%= answer_form.hidden_field :id if answer_form.object.persisted? %>
+                        </div>
+                        <% if answer_form.object.persisted? %>
+                          <div class="form-check">
+                            <%= answer_form.check_box :_destroy, class: "form-check-input" %>
+                            <%= answer_form.label :_destroy, "Usuń", class: "form-check-label text-danger" %>
+                          </div>
+                        <% else %>
+                          <span class="text-muted small">Nowa odpowiedź</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="alert alert-info">
+                <small>
+                  <strong>Tip:</strong> Aby dodać więcej odpowiedzi, po prostu zapisz pytanie -
+                  automatycznie pojawi się nowe puste pole do wypełnienia.
+                </small>
+              </div>
+            <% else %>
+              <div class="alert alert-warning">
+                <small>
+                  Pytania otwarte nie wymagają zdefiniowanych odpowiedzi - uczeń wpisuje własną odpowiedź.
+                </small>
+              </div>
+            <% end %>
+
+            <div class="d-flex gap-2 mt-4">
+              <%= form.submit "Zapisz zmiany", class: "btn btn-primary" %>
+              <%= link_to "Anuluj", classroom_quiz_path(@classroom, @quiz), class: "btn btn-secondary" %>
+            <%= link_to "Podgląd pytania", classroom_quiz_path(@classroom, @quiz, anchor: "question-#{@question.id}"), class: "btn btn-outline-info" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Informacje o pytaniu -->
+      <div class="card mt-3">
+        <div class="card-body">
+          <h6>Informacje o pytaniu:</h6>
+          <ul class="small text-muted mb-0">
+            <li>Utworzono: <%= @question.created_at.strftime("%d.%m.%Y %H:%M") %></li>
+            <li>Ostatnia aktualizacja: <%= @question.updated_at.strftime("%d.%m.%Y %H:%M") %></li>
+            <li>Liczba odpowiedzi: <%= @question.answers.count %></li>
+            <li>Poprawne odpowiedzi: <%= @question.answers.where(correct: true).count %></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
