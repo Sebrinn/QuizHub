@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_30_115034) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_05_160438) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -93,6 +93,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_30_115034) do
     t.boolean "shuffle_questions", default: false
     t.index ["classroom_id"], name: "index_quizzes_on_classroom_id"
     t.index ["created_by_id"], name: "index_quizzes_on_created_by_id"
+  end
+
+  create_table "temporary_ai_questions", force: :cascade do |t|
+    t.string "session_id"
+    t.integer "quiz_id"
+    t.jsonb "question_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|

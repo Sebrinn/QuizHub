@@ -2,11 +2,13 @@
 class AiQuestionsController < ApplicationController
   before_action :set_classroom
   before_action :set_quiz
+  before_action :set_generation_key
   after_action :verify_authorized
 
   def new
     authorize @quiz, :edit?
-    @ai_questions = ensure_questions_structure(session[:generated_questions] || [])
+    @ai_questions = load_questions_from_cache || []
+    puts "🔍 DEBUG: Loaded #{@ai_questions.size} questions from cache for key: #{@generation_key}"
   end
 
   def create
@@ -16,47 +18,46 @@ class AiQuestionsController < ApplicationController
     count  = params[:count].to_i
     count = 1 if count <= 0
 
-    # ✅ Inicjalizuj postęp w sesji
-    session[:generation_progress] = {
+    puts "🔍 DEBUG: Starting generation - key: #{@generation_key}, count: #{count}"
+
+    # Zapisz postęp w MemoryStore
+    save_progress_to_cache({
       total: count,
       current: 0,
       status: "in_progress"
-    }
+    })
 
     generator = OpenrouterAiGenerator.new
     generated_questions = []
 
-    # ✅ UŻYJ PUBLICZNEJ METODY Z GENERATORA - NIE TWÓŻ WŁASNEJ
     count.times do |i|
-      # ✅ Aktualizuj postęp PRZED generowaniem
-      session[:generation_progress] = {
+      save_progress_to_cache({
         total: count,
         current: i,
         status: "in_progress"
-      }
+      })
 
-      puts "Generating question #{i + 1}/#{count}"
+      puts "🔍 DEBUG: Generating question #{i + 1}/#{count}"
 
-      # ✅ UŻYJ PUBLICZNEJ METODY z generatora
       question = generator.generate_single_question(prompt, i + 1)
       generated_questions << question if question
 
-      # ✅ Aktualizuj postęp PO wygenerowaniu
-      session[:generation_progress] = {
+      save_progress_to_cache({
         total: count,
         current: i + 1,
         status: i + 1 == count ? "completed" : "in_progress"
-      }
+      })
 
-      # Małe opóźnienie między requestami
       sleep(1) if count > 1 && i < count - 1
     end
 
-    # Zapisz wygenerowane pytania w sesji
-    session[:generated_questions] = generated_questions.map(&:deep_symbolize_keys)
+    # Zapisz pytania w MemoryStore
+    save_questions_to_cache(generated_questions)
 
-    # ✅ Wyczyść postęp po zakończeniu
-    session.delete(:generation_progress)
+    # Wyczyść postęp po zakończeniu
+    clear_progress_from_cache
+
+    puts "🔍 DEBUG: Generation completed, saved #{generated_questions.size} questions to cache"
 
     @ai_questions = generated_questions
     render :new
@@ -65,12 +66,13 @@ class AiQuestionsController < ApplicationController
   def generating_status
     authorize @quiz, :edit?
 
-    # Pobierz postęp z sesji
-    progress = session[:generation_progress] || {
+    progress = load_progress_from_cache || {
       total: 0,
       current: 0,
       status: "not_started"
     }
+
+    puts "🔍 DEBUG generating_status: #{progress.inspect} (key: #{@generation_key})"
 
     render json: progress
   end
@@ -82,35 +84,35 @@ class AiQuestionsController < ApplicationController
       question_data = JSON.parse(params[:question_data])
       question_index = params[:question_index].to_i
 
-      # ✅ Upewnij się, że dane mają poprawną strukturę
       normalized_question = normalize_question_structure(question_data)
-
       @question = @quiz.questions.new(normalized_question)
 
       if @question.save
-        # ✅ Usuń pytanie po indexie
-        if session[:generated_questions] && session[:generated_questions][question_index]
-          session[:generated_questions].delete_at(question_index)
+        # Usuń pytanie z cache po indexie
+        questions = load_questions_from_cache || []
+        if questions[question_index]
+          questions.delete_at(question_index)
+          save_questions_to_cache(questions)
+          puts "🔍 DEBUG: Removed question #{question_index}, #{questions.size} remaining"
         end
 
-        # ✅ Upewnij się o strukturze przed renderowaniem
-        @ai_questions = ensure_questions_structure(session[:generated_questions] || [])
+        @ai_questions = load_questions_from_cache || []
 
         if @ai_questions.any?
           flash.now[:success] = "Pytanie dodane! Pozostało #{@ai_questions.size} pytań."
           render :new, status: :unprocessable_entity
         else
-          session.delete(:generated_questions)
+          clear_questions_from_cache
           redirect_to classroom_quiz_path(@classroom, @quiz),
                       notice: "Wszystkie pytania zostały dodane do quizu!"
         end
       else
-        @ai_questions = ensure_questions_structure(session[:generated_questions] || [])
+        @ai_questions = load_questions_from_cache || []
         flash.now[:error] = "Nie udało się dodać pytania: #{@question.errors.full_messages.join(', ')}"
         render :new, status: :unprocessable_entity
       end
     rescue JSON::ParserError => e
-      @ai_questions = ensure_questions_structure(session[:generated_questions] || [])
+      @ai_questions = load_questions_from_cache || []
       flash.now[:error] = "Niepoprawne dane pytania: #{e.message}"
       render :new, status: :unprocessable_entity
     end
@@ -122,9 +124,11 @@ class AiQuestionsController < ApplicationController
     added_count = 0
     error_count = 0
 
-    if session[:generated_questions]
-      session[:generated_questions].each do |question_data|
-        # ✅ Upewnij się o strukturze przed zapisem
+    questions = load_questions_from_cache || []
+    puts "🔍 DEBUG: Adding all #{questions.size} questions to quiz"
+
+    if questions.any?
+      questions.each do |question_data|
         normalized_question = normalize_question_structure(question_data)
         question = @quiz.questions.new(normalized_question)
         if question.save
@@ -136,7 +140,7 @@ class AiQuestionsController < ApplicationController
       end
     end
 
-    session.delete(:generated_questions)
+    clear_questions_from_cache
 
     if error_count.zero?
       redirect_to classroom_quiz_path(@classroom, @quiz),
@@ -149,14 +153,16 @@ class AiQuestionsController < ApplicationController
 
   def clear_questions
     authorize @quiz, :edit?
-    session.delete(:generated_questions)
+
+    puts "🔍 DEBUG: Clearing questions for key: #{@generation_key}"
+    clear_questions_from_cache
+
     redirect_to new_classroom_quiz_ai_questions_path(@classroom, @quiz),
                 notice: "Wygenerowane pytania zostały wyczyszczone."
   end
 
   private
-
-  # ✅ NOWA METODA: Upewnij się, że wszystkie pytania mają poprawną strukturę
+  # Reszta metod pozostaje bez zmian
   def ensure_questions_structure(questions)
     return [] unless questions.is_a?(Array)
 
@@ -165,27 +171,20 @@ class AiQuestionsController < ApplicationController
     end
   end
 
-  # ✅ NOWA METODA: Normalizuj strukturę pytania (symbolize_keys)
   def normalize_question_structure(question_data)
     return question_data unless question_data.is_a?(Hash)
 
-    # Konwertuj na symbole jeśli to stringi
     question = question_data.deep_symbolize_keys
 
-    # Upewnij się, że answers_attributes istnieje i jest tablicą
     if question[:answers_attributes].nil? || !question[:answers_attributes].is_a?(Array)
       question[:answers_attributes] = []
     else
-      # Upewnij się, że każda odpowiedź ma symbole
       question[:answers_attributes] = question[:answers_attributes].map do |answer|
         answer.is_a?(Hash) ? answer.deep_symbolize_keys : answer
       end
     end
 
-    # Upewnij się, że content istnieje
     question[:content] ||= "Brak treści pytania"
-
-    # Upewnij się, że question_type istnieje
     question[:question_type] ||= "multiple_choice"
 
     question
@@ -197,5 +196,44 @@ class AiQuestionsController < ApplicationController
 
   def set_quiz
     @quiz = @classroom.quizzes.find(params[:quiz_id])
+  end
+
+  def set_generation_key
+    # ✅ Unikalny klucz na podstawie użytkownika i quizu
+    @generation_key = "ai_generation_user_#{current_user.id}_quiz_#{@quiz.id}"
+    puts "🔍 DEBUG: Generation key set to: #{@generation_key}"
+  end
+
+  # ✅ METODY DO PRACY Z MEMORYSTORE
+
+  def save_progress_to_cache(progress)
+    Rails.cache.write("#{@generation_key}_progress", progress, expires_in: 1.hour)
+    puts "🔍 DEBUG: Progress saved to cache: #{progress}"
+
+    # ✅ DEBUG: Sprawdź czy naprawdę zapisano
+    test_read = Rails.cache.read("#{@generation_key}_progress")
+    puts "🔍 DEBUG: Immediately after save, read back: #{test_read}"
+  end
+
+  def load_progress_from_cache
+    progress = Rails.cache.read("#{@generation_key}_progress")
+    puts "🔍 DEBUG: Progress loaded from cache: #{progress}"
+    progress
+  end
+
+  def clear_progress_from_cache
+    Rails.cache.delete("#{@generation_key}_progress")
+  end
+
+  def save_questions_to_cache(questions)
+    Rails.cache.write("#{@generation_key}_questions", questions, expires_in: 1.hour)
+  end
+
+  def load_questions_from_cache
+    Rails.cache.read("#{@generation_key}_questions")
+  end
+
+  def clear_questions_from_cache
+    Rails.cache.delete("#{@generation_key}_questions")
   end
 end
