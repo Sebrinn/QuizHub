@@ -9,4 +9,14 @@ module InvitationsHelper
     else "secondary"
     end
   end
+
+  def status_icon_name(status)
+    case status
+    when "pending" then "clock"
+    when "accepted" then "check-circle"
+    when "expired" then "calendar-times"
+    when "cancelled" then "ban"
+    else "info-circle"
+    end
+  end
 end

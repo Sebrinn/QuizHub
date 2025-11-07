@@ -11,6 +11,7 @@ class OpenrouterAiGenerator
     puts "TEST: Generating question #{question_number} for: #{topic}"
 
     response = call_openrouter_api(topic, question_number)
+    puts "🔍 DEBUG: API status = #{response&.code}, body = #{response&.body[0..300]}"
 
     if response&.success?
       body = response.body.force_encoding("UTF-8")
@@ -76,7 +77,8 @@ class OpenrouterAiGenerator
     PROMPT
 
     body = {
-      model: "deepseek/deepseek-chat-v3.1:free",
+      # deepseek/deepseek-chat-v3.1:free
+      model: "openrouter/polaris-alpha",
       messages: [
         {
           role: "system",

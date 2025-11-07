@@ -1,49 +1,101 @@
 <!-- app/views/admin/users/index.html.erb -->
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Użytkownicy</h2>
-  </div>
+<%= render 'shared/icons' %>
 
-  <div class="card">
-    <div class="card-body">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Imię i nazwisko</th>
-            <th>Rola</th>
-            <th>Data rejestracji</th>
-            <th>Akcje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @users.each do |user| %>
-            <tr>
-              <td><%= user.email %></td>
-              <td><%= user.full_name %></td>
-              <td>
-                <span class="badge bg-<%= user_badge_color(user.role) %>">
-                  <%= user.role %>
-                </span>
-              </td>
-              <td><%= user.created_at.strftime("%d.%m.%Y") %></td>
-              <td>
-                <% if user.student? && policy(user).promote_to_teacher? %>
-                  <%= button_to "Awansuj na nauczyciela", 
-                        promote_to_teacher_admin_user_path(user), 
-                        class: "btn btn-sm btn-success",
-                        data: { confirm: "Na pewno awansować #{user.email} na nauczyciela?" } %>
-                <% elsif user.teacher? && policy(user).demote_to_student? %>
-                  <%= button_to "Zmien na ucznia", 
-                        demote_to_student_admin_user_path(user),
-                        class: "btn btn-sm btn-warning",
-                        data: { confirm: "Na pewno zmienić #{user.email} na ucznia?" } %>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 text-gray-800"><%= icon_with_text('user-circle', 'Zarządzanie użytkownikami') %></h1>
+      <p class="text-muted">Lista wszystkich zarejestrowanych użytkowników</p>
     </div>
   </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h5 class="card-title mb-0 text-gray-700">
+        <%= icon_with_text('users', 'Lista użytkowników', size: 'sm') %>
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="px-4 py-3 text-gray-600">
+                <%= icon_with_text('email', 'Email', size: 'sm') %>
+              </th>
+              <th class="px-4 py-3 text-gray-600">
+                <%= icon_with_text('user', 'Imię i nazwisko', size: 'sm') %>
+              </th>
+              <th class="px-4 py-3 text-gray-600">Rola</th>
+              <th class="px-4 py-3 text-gray-600">
+                <%= icon_with_text('calendar', 'Data rejestracji', size: 'sm') %>
+              </th>
+              <th class="px-4 py-3 text-gray-600 text-center">Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr class="align-middle">
+                <td class="px-4 py-3">
+                  <div class="d-flex align-items-center">
+                    <%= icon('email', css_class: 'text-gray-400 me-2') %>
+                    <span class="fw-medium text-gray-800"><%= user.email %></span>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="d-flex align-items-center">
+                    <%= icon('user', css_class: 'text-gray-400 me-2') %>
+                    <span class="text-gray-700"><%= user.full_name.presence || "Brak danych" %></span>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="badge rounded-pill bg-<%= user_badge_color(user.role) %>-subtle text-<%= user_badge_color(user.role) %> border border-<%= user_badge_color(user.role) %>-subtle">
+                    <%= icon(role_icon_name(user.role), size: 'sm', css_class: 'me-1') %>
+                    <%= user.role %>
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="d-flex align-items-center">
+                    <%= icon('calendar', css_class: 'text-gray-400 me-2') %>
+                    <span class="text-gray-700"><%= user.created_at.strftime("%d.%m.%Y") %></span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="d-flex gap-2 justify-content-center">
+                    <% if user.student? && policy(user).promote_to_teacher? %>
+                      <%= button_to promote_to_teacher_admin_user_path(user), 
+                            method: :patch,
+                            class: "btn btn-sm btn-success d-inline-flex align-items-center",
+                            data: { confirm: "Na pewno awansować #{user.email} na nauczyciela?" } do %>
+                        <%= icon('arrow-up', size: 'sm', css_class: 'me-1') %>
+                        Awansuj
+                      <% end %>
+                    <% elsif user.teacher? && policy(user).demote_to_student? %>
+                      <%= button_to demote_to_student_admin_user_path(user),
+                            method: :patch,
+                            class: "btn btn-sm btn-warning d-inline-flex align-items-center",
+                            data: { confirm: "Na pewno zmienić #{user.email} na ucznia?" } do %>
+                        <%= icon('arrow-down', size: 'sm', css_class: 'me-1') %>
+                        Zmień rolę
+                      <% end %>
+                    <% else %>
+                      <span class="text-muted small">Brak akcji</span>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <% if @users.empty? %>
+    <div class="text-center py-5">
+      <%= icon('users', size: 'xl', css_class: 'text-gray-300 mb-3') %>
+      <h5 class="text-gray-500">Brak użytkowników</h5>
+      <p class="text-muted">Żaden użytkownik nie został jeszcze zarejestrowany</p>
+    </div>
+  <% end %>
 </div>

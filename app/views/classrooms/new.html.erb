@@ -1,17 +1,106 @@
-<div class="container mt-5">
-  <h2>Nowa klasa</h2>
+<%= render 'shared/icons' %>
 
-  <%= form_with model: @classroom, local: true do |f| %>
-    <div class="mb-3">
-      <%= f.label :name, "Nazwa klasy" %>
-      <%= f.text_field :name, class: "form-control" %>
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8 col-md-10">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <%= icon('book-open', size: 'xl', css_class: 'text-primary') %>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h1 class="h4 mb-1 text-gray-800">Utwórz nową klasę</h1>
+              <p class="text-muted mb-0">Dodaj nową klasę do zarządzania studentami i quizami</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-4">
+          <%= form_with model: @classroom, local: true, class: "needs-validation", novalidate: true do |f| %>
+            <div class="mb-4">
+              <%= f.label :name, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('tag', 'Nazwa klasy', size: 'sm') %>
+              <% end %>
+              <%= f.text_field :name, 
+                  class: "form-control form-control-lg", 
+                  placeholder: "np. Matematyka - klasa 8A",
+                  required: true,
+                  autofocus: true %>
+              <div class="form-text text-muted">
+                Nadaj klasie czytelną i opisową nazwę
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :description, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('file-text', 'Opis klasy', size: 'sm') %>
+              <% end %>
+              <%= f.text_area :description, 
+                  class: "form-control", 
+                  rows: 4,
+                  placeholder: "Opisz cel i charakterystykę klasy...",
+                  required: false %>
+              <div class="form-text text-muted">
+                Opcjonalny opis pomagający zidentyfikować klasę (przedmiot, poziom, etc.)
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+              <div class="d-flex gap-3">
+                <%= link_to classrooms_path, class: "btn btn-outline-secondary flex-fill d-flex align-items-center justify-content-center" do %>
+                  <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+                  Powrót do klas
+                <% end %>
+                <%= f.submit "Utwórz klasę", 
+                    class: "btn btn-primary btn-lg flex-fill d-flex align-items-center justify-content-center",
+                    data: { disable_with: "Tworzenie..." } %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        
+        <div class="card-footer bg-light py-3 border-top">
+          <div class="text-center">
+            <small class="text-muted d-flex align-items-center justify-content-center">
+              <%= icon('info-circle', size: 'sm', css_class: 'me-1') %>
+              Po utworzeniu klasy otrzymasz kod zaproszenia dla studentów
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informacje dodatkowe -->
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-white py-3">
+          <h5 class="card-title mb-0 d-flex align-items-center">
+            <%= icon('lightbulb', size: 'sm', css_class: 'me-2 text-warning') %>
+            Przydatne informacje
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="text-gray-700 d-flex align-items-center mb-2">
+                <%= icon('users', size: 'sm', css_class: 'me-2 text-primary') %>
+                Zarządzanie studentami
+              </h6>
+              <p class="text-muted small mb-3">
+                Studenti dołączają do klasy używając kodu zaproszenia
+              </p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-gray-700 d-flex align-items-center mb-2">
+                <%= icon('clipboard-list', size: 'sm', css_class: 'me-2 text-success') %>
+                Tworzenie quizów
+              </h6>
+              <p class="text-muted small mb-3">
+                W każdej klasie możesz tworzyć i przypisywać quizy
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div class="mb-3">
-      <%= f.label :description, "Opis" %>
-      <%= f.text_area :description, class: "form-control" %>
-    </div>
-
-    <%= f.submit "Utwórz klasę", class: "btn btn-success" %>
-  <% end %>
+  </div>
 </div>

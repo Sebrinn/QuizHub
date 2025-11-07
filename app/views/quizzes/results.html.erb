@@ -1,201 +1,274 @@
-<%# app/views/quizzes/results.html.erb %>
-<div class="container mt-5">
-  <div class="card">
-    <div class="card-header">
-      <div class="d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Wyniki quizu: <%= @quiz.title %></h4>
-        <%= link_to "Powrót do quizu", classroom_quiz_path(@classroom, @quiz), class: "btn btn-outline-secondary btn-sm" %>
-      </div>
-    </div>
-    
-    <div class="card-body">
-      <!-- Wynik obecnego użytkownika -->
-      <% user_result = @quiz.quiz_results.active.find_by(user: current_user) %>
-      <% if user_result %>
-        <div class="alert alert-info">
-          <h5>Twój wynik</h5>
+<%= render 'shared/icons' %>
+
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
           <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <strong><%= user_result.score %> / <%= user_result.total %> punktów</strong>
-              <span class="badge bg-<%= result_percentage_color(user_result.score, user_result.total) %> ms-2">
-                <%= number_to_percentage((user_result.score.to_f / user_result.total) * 100, precision: 1) %>
-              </span>
-              <span class="badge bg-<%= result_status_badge(user_result.status) %> ms-1">
-                <%= result_status_text(user_result.status) %>
-              </span>
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                <%= icon('chart-bar', size: 'xl', css_class: 'text-primary') %>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h1 class="h4 mb-1 text-gray-800">Wyniki quizu</h1>
+                <p class="text-muted mb-0"><%= @quiz.title %></p>
+              </div>
             </div>
-            <small class="text-muted">
-              Rozwiązano: <%= user_result.created_at.strftime("%d.%m.%Y %H:%M") %>
-            </small>
+            <%= link_to classroom_quiz_path(@classroom, @quiz), 
+                  class: "btn btn-outline-secondary btn-sm d-flex align-items-center" do %>
+              <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+              Powrót do quizu
+            <% end %>
           </div>
         </div>
-      <% end %>
-
-      <!-- Tabela wszystkich wyników -->
-      <% if @quiz_results.any? %>
-        <h5 class="mt-4">
-          <% if current_user.teacher? || current_user.admin? %>
-            Wszystkie wyniki (<%= @quiz_results.count %>)
-          <% else %>
-            Ranking
+        
+        <div class="card-body p-4">
+          <!-- Wynik obecnego użytkownika -->
+          <% user_result = @quiz.quiz_results.active.find_by(user: current_user) %>
+          <% if user_result %>
+            <div class="alert alert-info d-flex align-items-center">
+              <%= icon('trophy', size: 'lg', css_class: 'me-3 flex-shrink-0 text-info') %>
+              <div class="flex-grow-1">
+                <h5 class="alert-heading mb-2">Twój wynik</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-3">
+                    <strong class="fs-5"><%= user_result.score %> / <%= user_result.total %> punktów</strong>
+                    <span class="badge bg-<%= result_percentage_color(user_result.score, user_result.total) %>-subtle text-<%= result_percentage_color(user_result.score, user_result.total) %> border border-<%= result_percentage_color(user_result.score, user_result.total) %>-subtle fs-6">
+                      <%= number_to_percentage((user_result.score.to_f / user_result.total) * 100, precision: 1) %>
+                    </span>
+                    <span class="badge bg-<%= result_status_badge(user_result.status) %>-subtle text-<%= result_status_badge(user_result.status) %> border border-<%= result_status_badge(user_result.status) %>-subtle">
+                      <%= result_status_text(user_result.status) %>
+                    </span>
+                  </div>
+                  <small class="text-muted d-flex align-items-center">
+                    <%= icon('clock', size: 'sm', css_class: 'me-1') %>
+                    <%= user_result.created_at.strftime("%d.%m.%Y %H:%M") %>
+                  </small>
+                </div>
+              </div>
+            </div>
           <% end %>
-        </h5>
 
-        <div class="table-responsive">
-          <table class="table table-striped table-hover">
-            <thead class="table-dark">
-              <tr>
-                <th>#</th>
-                <th>Użytkownik</th>
-                <th>Wynik</th>
-                <th>Procent</th>
-                <th>Status</th>
-                <th>Data</th>
+          <!-- Tabela wyników -->
+          <% if @quiz_results.any? %>
+            <div class="border-top pt-4 mt-4">
+              <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                <%= icon('users', size: 'sm', css_class: 'me-2 text-success') %>
                 <% if current_user.teacher? || current_user.admin? %>
-                  <th>Akcje</th>
+                  Wszystkie wyniki (<%= @quiz_results.count %>)
+                <% else %>
+                  Ranking klasy
                 <% end %>
-              </tr>
-            </thead>
-            <tbody>
-              <% @quiz_results.each_with_index do |result, index| %>
-                <tr class="<%= 'table-info' if result.user == current_user %>">
-                  <td><%= index + 1 %></td>
-                  <td>
-                    <%= result.user.full_name %>
-                    <% if result.user == current_user %>
-                      <span class="badge bg-primary ms-1">Ty</span>
-                    <% end %>
-                  </td>
-                  <td><strong><%= result.score %> / <%= result.total %></strong></td>
-                  <td>
-                    <span class="badge bg-<%= result_percentage_color(result.score, result.total) %>">
-                      <%= number_to_percentage((result.score.to_f / result.total) * 100, precision: 1) %>
-                    </span>
-                  </td>
-                  <td>
-                    <span class="badge bg-<%= result_status_badge(result.status) %>">
-                      <%= result_status_text(result.status) %>
-                    </span>
-                  </td>
-                  <td><%= result.created_at.strftime("%d.%m.%Y %H:%M") %></td>
-                  <% if current_user.teacher? || current_user.admin? %>
-                  <td>
-                    <div class="btn-group btn-group-sm">
-                      <%= link_to "Szczegóły", details_quiz_result_path(result), 
-                                  class: "btn btn-outline-primary" %>
-                      
-                      <% if policy(result).deactivate? && result.active? %>
-                        <%= button_to "Deaktywuj", deactivate_quiz_result_path(result),
+              </h5>
+
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="text-gray-600">#</th>
+                      <th class="text-gray-600">Użytkownik</th>
+                      <th class="text-gray-600">Wynik</th>
+                      <th class="text-gray-600">Procent</th>
+                      <th class="text-gray-600">Status</th>
+                      <th class="text-gray-600">Data</th>
+                      <% if current_user.teacher? || current_user.admin? %>
+                        <th class="text-gray-600 text-center">Akcje</th>
+                      <% end %>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @quiz_results.each_with_index do |result, index| %>
+                      <tr class="<%= 'table-active' if result.user == current_user %> align-middle">
+                        <td class="fw-medium text-gray-700"><%= index + 1 %></td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <%= icon('user-circle', size: 'sm', css_class: 'me-2 text-gray-400') %>
+                            <span class="<%= 'fw-bold text-primary' if result.user == current_user %>">
+                              <%= result.user.full_name %>
+                            </span>
+                            <% if result.user == current_user %>
+                              <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">
+                                <%= icon('star', size: 'xs', css_class: 'me-1') %>
+                                Ty
+                              </span>
+                            <% end %>
+                          </div>
+                        </td>
+                        <td class="fw-bold text-gray-800"><%= result.score %> / <%= result.total %></td>
+                        <td>
+                          <span class="badge bg-<%= result_percentage_color(result.score, result.total) %>-subtle text-<%= result_percentage_color(result.score, result.total) %> border border-<%= result_percentage_color(result.score, result.total) %>-subtle">
+                            <%= number_to_percentage((result.score.to_f / result.total) * 100, precision: 1) %>
+                          </span>
+                        </td>
+                        <td>
+                          <span class="badge bg-<%= result_status_badge(result.status) %>-subtle text-<%= result_status_badge(result.status) %> border border-<%= result_status_badge(result.status) %>-subtle">
+                            <%= result_status_text(result.status) %>
+                          </span>
+                        </td>
+                        <td class="text-gray-600">
+                          <small><%= result.created_at.strftime("%d.%m.%Y %H:%M") %></small>
+                        </td>
+                        <% if current_user.teacher? || current_user.admin? %>
+                          <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                              <%= link_to details_quiz_result_path(result), 
+                                    class: "btn btn-outline-primary btn-sm d-flex align-items-center",
+                                    title: "Szczegóły rozwiązania" do %>
+                                <%= icon('eye', size: 'xs', css_class: 'me-1') %>
+                                Szczegóły
+                              <% end %>
+                              
+                              <% if policy(result).deactivate? && result.active? %>
+                                <%= button_to deactivate_quiz_result_path(result),
                                       method: :patch,
                                       data: { turbo_confirm: "Dezaktywować to rozwiązanie?" },
-                                      class: "btn btn-outline-warning" %>
-                      <% end %>
-                      
-                      <% if policy(result).allow_retake? %>
-                        <%= button_to "Ponowne podejście", allow_retake_quiz_result_path(result),
+                                      class: "btn btn-outline-warning btn-sm d-flex align-items-center",
+                                      title: "Deaktywuj rozwiązanie" do %>
+                                  <%= icon('eye-off', size: 'xs', css_class: 'me-1') %>
+                                  Deaktywuj
+                                <% end %>
+                              <% end %>
+                              
+                              <% if policy(result).allow_retake? %>
+                                <%= button_to allow_retake_quiz_result_path(result),
                                       method: :patch,
                                       data: { turbo_confirm: "Zezwolić na ponowne podejście? Stare rozwiązanie zostanie oznaczone jako zastąpione." },
-                                      class: "btn btn-outline-success" %>
-                      <% end %>
+                                      class: "btn btn-outline-success btn-sm d-flex align-items-center",
+                                      title: "Zezwól na ponowne podejście" do %>
+                                  <%= icon('refresh', size: 'xs', css_class: 'me-1') %>
+                                  Ponowne podejście
+                                <% end %>
+                              <% end %>
+                            </div>
+                          </td>
+                        <% end %>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Statystyki dla nauczyciela/admina -->
+            <% if current_user.teacher? || current_user.admin? %>
+              <div class="border-top pt-4 mt-4">
+                <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                  <%= icon('chart-pie', size: 'sm', css_class: 'me-2 text-info') %>
+                  Statystyki quizu
+                </h5>
+                
+                <div class="row g-3">
+                  <!-- Podstawowe statystyki -->
+                  <div class="col-md-3">
+                    <div class="card border-0 bg-primary bg-opacity-10">
+                      <div class="card-body text-center">
+                        <%= icon('users', size: 'xl', css_class: 'text-primary mb-2') %>
+                        <h4 class="text-primary mb-1"><%= @quiz_results.active.count %></h4>
+                        <p class="text-muted mb-0 small">Aktywnych rozwiązań</p>
+                      </div>
                     </div>
-                  </td>
-                  <% end %>
-                </tr>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="card border-0 bg-success bg-opacity-10">
+                      <div class="card-body text-center">
+                        <%= icon('trophy', size: 'xl', css_class: 'text-success mb-2') %>
+                        <h4 class="text-success mb-1"><%= @best_score %>%</h4>
+                        <p class="text-muted mb-0 small">Najlepszy wynik</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="card border-0 bg-warning bg-opacity-10">
+                      <div class="card-body text-center">
+                        <%= icon('chart-bar', size: 'xl', css_class: 'text-warning mb-2') %>
+                        <h4 class="text-warning mb-1"><%= @average_score %>%</h4>
+                        <p class="text-muted mb-0 small">Średni wynik</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="card border-0 bg-danger bg-opacity-10">
+                      <div class="card-body text-center">
+                        <%= icon('exclamation', size: 'xl', css_class: 'text-danger mb-2') %>
+                        <h4 class="text-danger mb-1"><%= @worst_score %>%</h4>
+                        <p class="text-muted mb-0 small">Najsłabszy wynik</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Statystyki statusów -->
+                <div class="row g-3 mt-2">
+                  <div class="col-md-4">
+                    <div class="card border-0 bg-info bg-opacity-10">
+                      <div class="card-body text-center">
+                        <%= icon('check-circle', size: 'xl', css_class: 'text-info mb-2') %>
+                        <h4 class="text-info mb-1"><%= @quiz_results.active.count %></h4>
+                        <p class="text-muted mb-0 small">Aktywne</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="card border-0 bg-secondary bg-opacity-10">
+                      <div class="card-body text-center">
+                        <%= icon('x-circle', size: 'xl', css_class: 'text-secondary mb-2') %>
+                        <h4 class="text-secondary mb-1"><%= @quiz_results.inactive.count %></h4>
+                        <p class="text-muted mb-0 small">Dezaktywowane</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="card border-0 bg-warning bg-opacity-10">
+                      <div class="card-body text-center">
+                        <%= icon('pencil', size: 'xl', css_class: 'text-warning mb-2') %>
+                        <h4 class="text-warning mb-1"><%= @quiz_results.retaken.count %></h4>
+                        <p class="text-muted mb-0 small">Zastąpione</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
+          <% else %>
+            <div class="text-center py-5">
+              <%= icon('inbox', size: 'xl', css_class: 'text-gray-300 mb-3') %>
+              <h5 class="text-gray-500">Brak wyników</h5>
+              <p class="text-muted">Nikt jeszcze nie rozwiązał tego quizu.</p>
+            </div>
+          <% end %>
+
+          <!-- Akcje dodatkowe -->
+          <div class="border-top pt-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <%= link_to classroom_path(@classroom), 
+                    class: "btn btn-outline-secondary d-flex align-items-center" do %>
+                <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+                Powrót do klasy
               <% end %>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Statystyki dla nauczyciela/admina -->
-        <% if current_user.teacher? || current_user.admin? %>
-          <div class="mt-5">
-            <h5>Statystyki quizu</h5>
-            <div class="row">
-              <div class="col-md-3">
-                <div class="card text-center">
-                  <div class="card-body">
-                    <h5 class="card-title text-primary"><%= @quiz_results.active.count %></h5>
-                    <p class="card-text">Aktywnych rozwiązań</p>
+              
+              <% if policy(@quiz).solve? && @quiz.status == :ongoing && !user_result %>
+                <%= button_to start_classroom_quiz_path(@classroom, @quiz),
+                      method: :post,
+                      class: "btn btn-success d-flex align-items-center" do %>
+                  <%= icon('play', size: 'sm', css_class: 'me-2') %>
+                  Rozpocznij quiz
+                <% end %>
+              <% elsif policy(@quiz).solve? && @quiz.status == :ongoing && user_result&.inactive? %>
+                <div class="alert alert-warning d-flex align-items-center">
+                  <%= icon('information-circle', size: 'lg', css_class: 'me-3 text-warning') %>
+                  <div class="flex-grow-1">
+                    <p class="mb-2">Twoje poprzednie rozwiązanie zostało dezaktywowane przez nauczyciela.</p>
+                    <%= link_to "Rozpocznij quiz ponownie", start_classroom_quiz_path(@classroom, @quiz), 
+                          class: "btn btn-primary btn-sm d-flex align-items-center",
+                          data: { turbo: false } %>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card text-center">
-                  <div class="card-body">
-                    <h5 class="card-title text-success"><%= @best_score %>%</h5>
-                    <p class="card-text">Najlepszy wynik</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card text-center">
-                  <div class="card-body">
-                    <h5 class="card-title text-warning"><%= @average_score %>%</h5>
-                    <p class="card-text">Średni wynik</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card text-center">
-                  <div class="card-body">
-                    <h5 class="card-title text-danger"><%= @worst_score %>%</h5>
-                    <p class="card-text">Najsłabszy wynik</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Dodatkowe statystyki statusów -->
-            <div class="row mt-3">
-              <div class="col-md-4">
-                <div class="card text-center">
-                  <div class="card-body">
-                    <h5 class="card-title text-info"><%= @quiz_results.active.count %></h5>
-                    <p class="card-text">Aktywne</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card text-center">
-                  <div class="card-body">
-                    <h5 class="card-title text-secondary"><%= @quiz_results.inactive.count %></h5>
-                    <p class="card-text">Dezaktywowane</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card text-center">
-                  <div class="card-body">
-                    <h5 class="card-title text-warning"><%= @quiz_results.retaken.count %></h5>
-                    <p class="card-text">Zastąpione</p>
-                  </div>
-                </div>
-              </div>
+              <% end %>
             </div>
           </div>
-        <% end %>
-
-      <% else %>
-        <div class="alert alert-warning text-center">
-          <h5>Brak wyników</h5>
-          <p class="mb-0">Nikt jeszcze nie rozwiązał tego quizu.</p>
         </div>
-      <% end %>
-
-      <div class="mt-4">
-        <%= link_to "Powrót do klasy", classroom_path(@classroom), class: "btn btn-secondary" %>
-        <% if policy(@quiz).solve? && @quiz.status == :ongoing && !user_result %>
-            <%= button_to "Rozpocznij", start_classroom_quiz_path(@classroom, @quiz),
-                        method: :post,
-                        class: "btn btn-sm btn-success" %>
-        <% elsif policy(@quiz).solve? && @quiz.status == :ongoing && user_result&.inactive? %>
-          <div class="alert alert-warning mt-3">
-            <p>Twoje poprzednie rozwiązanie zostało dezaktywowane przez nauczyciela. Możesz podejść do quizu ponownie.</p>
-            <%= link_to "Rozpocznij quiz ponownie", start_classroom_quiz_path(@classroom, @quiz), 
-                        class: "btn btn-primary",
-                        data: { turbo: false } %>
-          </div>
-        <% end %>
       </div>
     </div>
   </div>

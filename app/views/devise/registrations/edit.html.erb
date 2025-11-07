@@ -1,69 +1,186 @@
-<div class="container mt-5">
+<%= render 'shared/icons' %>
+
+<div class="container-fluid py-4">
   <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-      <div class="card shadow">
-        <div class="card-header bg-info text-white text-center">
-          <h4 class="mb-0">Edycja profilu</h4>
+    <div class="col-xl-6 col-lg-8 col-md-10">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <%= icon('user-circle', size: 'xl', css_class: 'text-info') %>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h1 class="h4 mb-1 text-gray-800">Edycja profilu</h1>
+              <p class="text-muted mb-0">Zarządzaj swoimi danymi i ustawieniami konta</p>
+            </div>
+          </div>
         </div>
+        
         <div class="card-body p-4">
-          <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+          <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, class: "needs-validation" }, novalidate: true) do |f| %>
             <%= render "devise/shared/error_messages", resource: resource %>
 
             <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= f.label :first_name, "Imię", class: "form-label" %>
-                <%= f.text_field :first_name, class: "form-control", required: true %>
+              <div class="col-md-6 mb-4">
+                <%= f.label :first_name, class: "form-label fw-medium text-gray-700" do %>
+                  <%= icon_with_text('user', 'Imię', size: 'sm') %>
+                <% end %>
+                <%= f.text_field :first_name, 
+                    class: "form-control form-control-lg", 
+                    placeholder: "Twoje imię",
+                    required: true,
+                    autofocus: true %>
               </div>
-              <div class="col-md-6 mb-3">
-                <%= f.label :last_name, "Nazwisko", class: "form-label" %>
-                <%= f.text_field :last_name, class: "form-control", required: true %>
+              <div class="col-md-6 mb-4">
+                <%= f.label :last_name, class: "form-label fw-medium text-gray-700" do %>
+                  <%= icon_with_text('user', 'Nazwisko', size: 'sm') %>
+                <% end %>
+                <%= f.text_field :last_name, 
+                    class: "form-control form-control-lg", 
+                    placeholder: "Twoje nazwisko",
+                    required: true %>
               </div>
             </div>
 
-            <div class="mb-3">
-              <%= f.label :email, "Email", class: "form-label" %>
-              <%= f.email_field :email, autocomplete: "email", class: "form-control", required: true %>
+            <div class="mb-4">
+              <%= f.label :email, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('at', 'Adres email', size: 'sm') %>
+              <% end %>
+              <%= f.email_field :email, 
+                  autocomplete: "email", 
+                  class: "form-control form-control-lg", 
+                  placeholder: "twoj@email.com",
+                  required: true %>
             </div>
 
             <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-              <div class="alert alert-warning">
-                Oczekuje na potwierdzenie: <%= resource.unconfirmed_email %>
+              <div class="alert alert-warning d-flex align-items-center mb-4">
+                <%= icon('clock', size: 'lg', css_class: 'me-3 flex-shrink-0 text-warning') %>
+                <div class="flex-grow-1">
+                  <small class="fw-medium">Oczekuje na potwierdzenie nowego adresu email</small>
+                  <div class="text-muted small mt-1">
+                    Wysłaliśmy link potwierdzający na adres: <strong><%= resource.unconfirmed_email %></strong>
+                  </div>
+                </div>
               </div>
             <% end %>
 
-            <div class="mb-3">
-              <%= f.label :password, "Nowe hasło", class: "form-label" %>
-              <small class="form-text text-muted">(pozostaw puste jeśli nie chcesz zmieniać)</small>
-              <%= f.password_field :password, autocomplete: "new-password", class: "form-control" %>
-              <% if @minimum_password_length %>
-                <small class="form-text text-muted">minimum <%= @minimum_password_length %> znaków</small>
+            <div class="border-top pt-4 mt-4">
+              <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                <%= icon('key', size: 'sm', css_class: 'me-2 text-warning') %>
+                Zmiana hasła
+              </h5>
+              
+              <div class="mb-4">
+                <%= f.label :password, class: "form-label fw-medium text-gray-700" do %>
+                  <%= icon_with_text('lock', 'Nowe hasło', size: 'sm') %>
+                <% end %>
+                <%= f.password_field :password, 
+                    autocomplete: "new-password", 
+                    class: "form-control", 
+                    placeholder: "Zostaw puste jeśli nie chcesz zmieniać" %>
+                <div class="form-text text-muted">
+                  <% if @minimum_password_length %>
+                    Minimum <%= @minimum_password_length %> znaków
+                  <% else %>
+                    Opcjonalne - zmień tylko jeśli chcesz ustawić nowe hasło
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <%= f.label :password_confirmation, class: "form-label fw-medium text-gray-700" do %>
+                  <%= icon_with_text('lock-check', 'Potwierdzenie nowego hasła', size: 'sm') %>
+                <% end %>
+                <%= f.password_field :password_confirmation, 
+                    autocomplete: "new-password", 
+                    class: "form-control", 
+                    placeholder: "Powtórz nowe hasło" %>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :current_password, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('shield-check', 'Obecne hasło', size: 'sm') %>
               <% end %>
+              <%= f.password_field :current_password, 
+                  autocomplete: "current-password", 
+                  class: "form-control", 
+                  placeholder: "Wpisz obecne hasło aby potwierdzić zmiany",
+                  required: true %>
+              <div class="form-text text-muted">
+                Wymagane do potwierdzenia wszystkich zmian w profilu
+              </div>
             </div>
 
-            <div class="mb-3">
-              <%= f.label :password_confirmation, "Potwierdzenie nowego hasła", class: "form-label" %>
-              <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control" %>
-            </div>
-
-            <div class="mb-3">
-              <%= f.label :current_password, "Obecne hasło", class: "form-label" %>
-              <small class="form-text text-muted">(potrzebne do potwierdzenia zmian)</small>
-              <%= f.password_field :current_password, autocomplete: "current-password", class: "form-control", required: true %>
-            </div>
-
-            <div class="d-grid">
-              <%= f.submit "Zaktualizuj", class: "btn btn-info btn-lg" %>
+            <div class="d-grid mt-4 pt-3 border-top">
+              <%= f.submit "Zaktualizuj profil", 
+                  class: "btn btn-info btn-lg d-flex align-items-center justify-content-center",
+                  data: { disable_with: "Zapisywanie..." } %>
             </div>
           <% end %>
 
-          <hr class="my-4">
+          <div class="border-top mt-5 pt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="text-gray-700 mb-0 d-flex align-items-center">
+                <%= icon('exclamation-triangle', size: 'sm', css_class: 'me-2 text-danger') %>
+                Niebezpieczna strefa
+              </h5>
+            </div>
+            
+            <div class="alert alert-danger">
+              <div class="d-flex align-items-start">
+                <%= icon('alert-triangle', size: 'lg', css_class: 'me-3 mt-1 flex-shrink-0 text-danger') %>
+                <div class="flex-grow-1">
+                  <h6 class="alert-heading">Usunięcie konta</h6>
+                  <p class="mb-2">Ta operacja jest nieodwracalna. Wszystkie Twoje dane zostaną trwale usunięte.</p>
+                  <%= button_to registration_path(resource_name), 
+                        method: :delete, 
+                        data: { 
+                          confirm: "Czy na pewno chcesz usunąć swoje konto? Tej operacji nie można cofnąć.",
+                          turbo_confirm: "Czy na pewno chcesz usunąć swoje konto? Tej operacji nie można cofnąć." 
+                        }, 
+                        class: "btn btn-danger btn-sm d-flex align-items-center" do %>
+                    <%= icon('trash', size: 'sm', css_class: 'me-1') %>
+                    Usuń moje konto
+                  <% end %>
+                </div>
+              </div>
+            </div>
 
-          <h5>Usunięcie konta</h5>
-          <p>Niezadowolony? <%= button_to "Usuń moje konto", registration_path(resource_name), 
-                data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, 
-                method: :delete, class: "btn btn-danger" %></p>
+            <div class="text-center">
+              <%= link_to :back, class: "btn btn-outline-secondary d-flex align-items-center mx-auto" do %>
+                <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+                Wróć do poprzedniej strony
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <%= link_to "Wróć", :back, class: "btn btn-secondary" %>
+      <!-- Informacje o bezpieczeństwie -->
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-white py-3">
+          <h6 class="mb-0 d-flex align-items-center">
+            <%= icon('shield-check', size: 'sm', css_class: 'me-2 text-success') %>
+            Bezpieczeństwo Twojego konta
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2 d-flex align-items-start">
+              <%= icon('check', size: 'sm', css_class: 'me-2 text-success mt-1 flex-shrink-0') %>
+              <span class="text-muted">Twoje hasło jest <strong>bezpiecznie zaszyfrowane</strong></span>
+            </li>
+            <li class="mb-2 d-flex align-items-start">
+              <%= icon('check', size: 'sm', css_class: 'me-2 text-success mt-1 flex-shrink-0') %>
+              <span class="text-muted">Wymagamy <strong>obecnego hasła</strong> do potwierdzenia zmian</span>
+            </li>
+            <li class="d-flex align-items-start">
+              <%= icon('check', size: 'sm', css_class: 'me-2 text-success mt-1 flex-shrink-0') %>
+              <span class="text-muted">Zmiany email wymagają <strong>ponownego potwierdzenia</strong></span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

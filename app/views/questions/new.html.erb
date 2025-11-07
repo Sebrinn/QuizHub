@@ -1,78 +1,128 @@
-<%# app/views/questions/new.html.erb %>
-<div class="container mt-5">
+<%= render 'shared/icons' %>
+
+<div class="container-fluid py-4">
   <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-header">
-          <h4 class="mb-0">Dodaj pytanie do: <%= @quiz.title %></h4>
+    <div class="col-xl-8 col-lg-10">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <%= icon('plus-circle', size: 'xl', css_class: 'text-primary') %>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h1 class="h4 mb-1 text-gray-800">Dodaj nowe pytanie</h1>
+              <p class="text-muted mb-0">Quiz: <%= @quiz.title %></p>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
-          <%= form_with model: [@classroom, @quiz, @question], local: true do |form| %>
+        
+        <div class="card-body p-4">
+          <%= form_with model: [@classroom, @quiz, @question], local: true, class: "needs-validation", novalidate: true do |form| %>
             <% if @question.errors.any? %>
-              <div class="alert alert-danger">
-                <h5><%= pluralize(@question.errors.count, "błąd") %> uniemożliwia zapisanie pytania:</h5>
-                <ul class="mb-0">
-                  <% @question.errors.full_messages.each do |message| %>
-                    <li><%= message %></li>
-                  <% end %>
-                </ul>
-              </div>
-            <% end %>
-
-            <div class="mb-3">
-              <%= form.label :content, "Treść pytania", class: "form-label" %>
-              <%= form.text_area :content, class: "form-control #{'is-invalid' if @question.errors[:content].any?}", rows: 3, required: true %>
-              <% if @question.errors[:content].any? %>
-                <div class="invalid-feedback">
-                  <%= @question.errors[:content].join(', ') %>
-                </div>
-              <% end %>
-            </div>
-
-            <div class="mb-3">
-              <%= form.label :question_type, "Typ pytania", class: "form-label" %>
-              <%= form.select :question_type, 
-                            [['Wielokrotny wybór', 'multiple_choice'], ['Otwarte', 'open_ended']], 
-                            {}, 
-                            class: "form-select #{'is-invalid' if @question.errors[:question_type].any?}",
-                            id: "question_question_type" %>  <!-- TO JEST POPRAWNE ID -->
-              <% if @question.errors[:question_type].any? %>
-                <div class="invalid-feedback">
-                  <%= @question.errors[:question_type].join(', ') %>
-                </div>
-              <% end %>
-            </div>
-
-            <!-- Sekcja odpowiedzi - DODAJEMY ID -->
-            <div class="mb-4" id="multiple_choice_section">  <!-- DODANE ID -->
-              <h5>Odpowiedzi</h5>
-              
-              <% if @question.errors[:base].any? %>
-                <div class="alert alert-warning">
+              <div class="alert alert-danger d-flex align-items-start mb-4">
+                <%= icon('exclamation-triangle', size: 'lg', css_class: 'me-3 mt-1 flex-shrink-0 text-danger') %>
+                <div class="flex-grow-1">
+                  <h5 class="alert-heading">
+                    <%= pluralize(@question.errors.count, "błąd") %> uniemożliwia zapisanie pytania:
+                  </h5>
                   <ul class="mb-0">
-                    <% @question.errors[:base].each do |message| %>
+                    <% @question.errors.full_messages.each do |message| %>
                       <li><%= message %></li>
                     <% end %>
                   </ul>
                 </div>
+              </div>
+            <% end %>
+
+            <div class="mb-4">
+              <%= form.label :content, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('chat-alt', 'Treść pytania', size: 'sm') %>
+              <% end %>
+              <%= form.text_area :content, 
+                  class: "form-control form-control-lg #{'is-invalid' if @question.errors[:content].any?}", 
+                  rows: 4,
+                  placeholder: "Wprowadź treść pytania...",
+                  required: true %>
+              <% if @question.errors[:content].any? %>
+                <div class="invalid-feedback d-flex align-items-center">
+                  <%= icon('exclamation-circle', size: 'sm', css_class: 'me-1') %>
+                  <%= @question.errors[:content].join(', ') %>
+                </div>
+              <% end %>
+              <div class="form-text text-muted">
+                Sformułuj pytanie w sposób jasny i zrozumiały dla uczniów
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <%= form.label :question_type, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('collection', 'Typ pytania', size: 'sm') %>
+              <% end %>
+              <%= form.select :question_type, 
+                            [['Wielokrotny wybór', 'multiple_choice'], ['Otwarte', 'open_ended']], 
+                            {}, 
+                            class: "form-select form-select-lg #{'is-invalid' if @question.errors[:question_type].any?}",
+                            id: "question_question_type" %>
+              <% if @question.errors[:question_type].any? %>
+                <div class="invalid-feedback d-flex align-items-center">
+                  <%= icon('exclamation-circle', size: 'sm', css_class: 'me-1') %>
+                  <%= @question.errors[:question_type].join(', ') %>
+                </div>
+              <% end %>
+              <div class="form-text text-muted">
+                Wybierz typ pytania - nie można go zmienić po utworzeniu
+              </div>
+            </div>
+
+            <!-- Sekcja odpowiedzi -->
+            <div class="border-top pt-4 mt-4" id="multiple_choice_section">
+              <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                <%= icon('check-circle', size: 'sm', css_class: 'me-2 text-success') %>
+                Odpowiedzi
+              </h5>
+              
+              <% if @question.errors[:base].any? %>
+                <div class="alert alert-warning d-flex align-items-start mb-4">
+                  <%= icon('information-circle', size: 'lg', css_class: 'me-3 mt-1 flex-shrink-0 text-warning') %>
+                  <div class="flex-grow-1">
+                    <ul class="mb-0">
+                      <% @question.errors[:base].each do |message| %>
+                        <li><%= message %></li>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
               <% end %>
               
-              <p class="text-muted small">
-                <strong>Dla pytań wielokrotnego wyboru:</strong> zaznacz poprawne odpowiedzi. 
-                Pytanie musi mieć przynajmniej jedną poprawną odpowiedź i co najmniej dwie odpowiedzi w sumie.<br>
-                <strong>Dla pytań otwartych:</strong> odpowiedzi są opcjonalne - uczeń wpisuje własną odpowiedź.
-              </p>
+              <div class="alert alert-info d-flex align-items-start mb-4">
+                <%= icon('information-circle', size: 'lg', css_class: 'me-3 mt-1 flex-shrink-0 text-info') %>
+                <div class="flex-grow-1">
+                  <small>
+                    <strong>Dla pytań wielokrotnego wyboru:</strong> zaznacz poprawne odpowiedzi. 
+                    Pytanie musi mieć <strong>przynajmniej jedną poprawną odpowiedź</strong> i 
+                    <strong>co najmniej dwie odpowiedzi</strong> w sumie.<br>
+                    <strong>Dla pytań otwartych:</strong> odpowiedzi są opcjonalne - uczeń wpisuje własną odpowiedź.
+                  </small>
+                </div>
+              </div>
               
               <%= form.fields_for :answers do |answer_form| %>
-                <div class="card mb-2">
+                <div class="card border mb-3">
                   <div class="card-body">
-                    <div class="d-flex align-items-center">
-                      <div class="form-check me-3">
-                        <%= answer_form.check_box :correct, class: "form-check-input" %>
-                        <%= answer_form.label :correct, "Poprawna", class: "form-check-label" %>
+                    <div class="row align-items-center g-3">
+                      <div class="col-auto">
+                        <div class="form-check">
+                          <%= answer_form.check_box :correct, class: "form-check-input answer-correct-checkbox" %>
+                          <%= answer_form.label :correct, class: "form-check-label small fw-medium text-success" do %>
+                            <%= icon('check', size: 'xs', css_class: 'me-1') %>
+                            Poprawna
+                          <% end %>
+                        </div>
                       </div>
-                      <div class="flex-grow-1">
-                        <%= answer_form.text_field :content, class: "form-control", placeholder: "Wprowadź odpowiedź..." %>
+                      <div class="col">
+                        <%= answer_form.text_field :content, 
+                              class: "form-control", 
+                              placeholder: "Wprowadź treść odpowiedzi..." %>
                       </div>
                     </div>
                   </div>
@@ -80,29 +130,62 @@
               <% end %>
             </div>
 
-            <div class="alert alert-info">
-              <small>
-                <strong>Tip:</strong> Aby dodać więcej odpowiedzi, zapisz pytanie i edytuj je ponownie - 
-                automatycznie pojawi się nowe puste pole.
-              </small>
+            <div class="alert alert-warning d-flex align-items-center mt-4">
+              <%= icon('lightbulb', size: 'lg', css_class: 'me-3 flex-shrink-0 text-warning') %>
+              <div class="flex-grow-1">
+                <small>
+                  <strong>Tip:</strong> Aby dodać więcej odpowiedzi, zapisz pytanie i edytuj je ponownie - 
+                  automatycznie pojawi się nowe puste pole.
+                </small>
+              </div>
             </div>
 
-            <div class="d-flex gap-2 mt-4">
-              <%= form.submit "Dodaj pytanie", class: "btn btn-primary" %>
-              <%= link_to "Anuluj", classroom_quiz_path(@classroom, @quiz), class: "btn btn-secondary" %>
+            <div class="d-flex gap-3 mt-4 pt-4 border-top">
+              <%= form.submit "Dodaj pytanie", 
+                  class: "btn btn-primary btn-lg flex-fill d-flex align-items-center justify-content-center",
+                  data: { disable_with: "Dodawanie..." } %>
+              
+              <%= link_to classroom_quiz_path(@classroom, @quiz), 
+                    class: "btn btn-outline-secondary flex-fill d-flex align-items-center justify-content-center" do %>
+                <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+                Anuluj
+              <% end %>
             </div>
           <% end %>
         </div>
       </div>
 
-      <!-- Informacja pomocnicza -->
-      <div class="card mt-3">
+      <!-- Informacja o typach pytań -->
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-white py-3">
+          <h6 class="mb-0 d-flex align-items-center">
+            <%= icon('academic-cap', size: 'sm', css_class: 'me-2 text-info') %>
+            O typach pytań
+          </h6>
+        </div>
         <div class="card-body">
-          <h6>O typach pytań:</h6>
-          <ul class="small text-muted mb-0">
-            <li><strong>Wielokrotny wybór</strong> - uczeń wybiera jedną lub więcej odpowiedzi z podanych</li>
-            <li><strong>Otwarte</strong> - uczeń wpisuje własną odpowiedź tekstową</li>
-          </ul>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <h6 class="text-gray-700 d-flex align-items-center mb-2">
+                <%= icon('check-circle', size: 'sm', css_class: 'me-2 text-success') %>
+                Wielokrotny wybór
+              </h6>
+              <p class="text-muted small mb-0">
+                Uczeń wybiera jedną lub więcej odpowiedzi z podanych opcji. 
+                Idealne do testowania wiedzy faktograficznej.
+              </p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h6 class="text-gray-700 d-flex align-items-center mb-2">
+                <%= icon('pencil', size: 'sm', css_class: 'me-2 text-primary') %>
+                Otwarte
+              </h6>
+              <p class="text-muted small mb-0">
+                Uczeń wpisuje własną odpowiedź tekstową. 
+                Doskonałe do sprawdzania zrozumienia i umiejętności formułowania myśli.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -114,28 +197,21 @@ function initQuestionTypeToggle() {
   const questionTypeSelect = document.getElementById('question_question_type');
   const multipleChoiceSection = document.getElementById('multiple_choice_section');
   
-  
   if (questionTypeSelect && multipleChoiceSection) {
     function toggleAnswersSection() {
       const isMultipleChoice = questionTypeSelect.value === 'multiple_choice';
       multipleChoiceSection.style.display = isMultipleChoice ? 'block' : 'none';
-      console.log('Toggled section. Multiple choice:', isMultipleChoice);
     }
     
     questionTypeSelect.addEventListener('change', toggleAnswersSection);
-    toggleAnswersSection(); // Initialize
-    console.log('🎉 QUESTION TYPE TOGGLE INITIALIZED SUCCESSFULLY!');
-  } else {
-    console.log('❌ Elements not found');
-    console.log('Select:', questionTypeSelect);
-    console.log('Section:', multipleChoiceSection);
+    toggleAnswersSection(); // Initialize on page load
   }
 }
 
-// Event listeners
+// Event listeners for Turbo
 document.addEventListener('turbo:load', initQuestionTypeToggle);
 document.addEventListener('turbo:render', initQuestionTypeToggle);
 
-// Bezpośrednie uruchomienie
-setTimeout(initQuestionTypeToggle, 100);
+// Direct initialization
+document.addEventListener('DOMContentLoaded', initQuestionTypeToggle);
 </script>

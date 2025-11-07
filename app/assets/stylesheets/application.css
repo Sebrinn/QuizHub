@@ -1,3 +1,5 @@
+@import "components/icons";
+
 /*
  * This is a manifest file that'll be compiled into application.css.
  *
@@ -47,4 +49,52 @@
 .card.text-center .card-title {
   font-size: 2rem;
   font-weight: bold;
+}
+
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  vertical-align: middle;
+  fill: currentColor;
+  transition: fill 0.2s ease-in-out;
+}
+
+/* rozmiary ikon */
+.icon-sm {
+  width: 0.875em;
+  height: 0.875em;
+}
+
+.icon-lg {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.icon-xl {
+  width: 1.75em;
+  height: 1.75em;
+}
+
+/* wyrównanie ikony z tekstem */
+.icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* opcjonalnie: dopasowanie kolorów dla Bootstrap */
+.text-gray-800 .icon,
+.text-gray-700 .icon,
+.text-gray-600 .icon {
+  fill: currentColor;
+}
+
+.btn .icon {
+  margin-right: 0.25rem;
+}
+
+.btn:hover .icon {
+  fill: #fff; /* np. biały na hover */
 }

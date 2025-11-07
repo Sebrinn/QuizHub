@@ -1,30 +1,98 @@
-<div class="container mt-5">
+<%= render 'shared/icons' %>
+
+<div class="container-fluid py-4">
   <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow">
-        <div class="card-header bg-secondary text-white text-center">
-          <h4 class="mb-0">Wyślij ponownie instrukcje potwierdzenia</h4>
+    <div class="col-xl-5 col-lg-6 col-md-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <%= icon('envelope', size: 'xl', css_class: 'text-secondary') %>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h1 class="h4 mb-1 text-gray-800">Potwierdzenie konta</h1>
+              <p class="text-muted mb-0">Wyślij ponownie instrukcje aktywacyjne</p>
+            </div>
+          </div>
         </div>
+        
         <div class="card-body p-4">
-          <%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+          <%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post, class: "needs-validation" }, novalidate: true) do |f| %>
             <%= render "devise/shared/error_messages", resource: resource %>
 
-            <div class="mb-3">
-              <p class="text-muted">Nie otrzymałeś emaila z instrukcjami potwierdzenia?</p>
-              <%= f.label :email, "Email", class: "form-label" %>
-              <%= f.email_field :email, autofocus: true, autocomplete: "email", 
-                  value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email),
-                  class: "form-control", required: true %>
+            <div class="alert alert-info d-flex align-items-center mb-4">
+              <%= icon('info-circle', size: 'lg', css_class: 'me-3 flex-shrink-0 text-info') %>
+              <div class="flex-grow-1">
+                <small class="fw-medium">Nie otrzymałeś emaila z instrukcjami potwierdzenia?</small>
+                <div class="text-muted small mt-1">
+                  Wpisz swój adres email, a wyślemy Ci ponownie link aktywacyjny.
+                </div>
+              </div>
             </div>
 
-            <div class="d-grid">
-              <%= f.submit "Wyślij ponownie instrukcje", class: "btn btn-secondary btn-lg" %>
+            <div class="mb-4">
+              <%= f.label :email, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('at', 'Adres email', size: 'sm') %>
+              <% end %>
+              <%= f.email_field :email, 
+                  autofocus: true, 
+                  autocomplete: "email", 
+                  value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email),
+                  class: "form-control form-control-lg", 
+                  placeholder: "twoj@email.com",
+                  required: true %>
+              <div class="form-text text-muted">
+                Na ten adres wyślemy link aktywacyjny do Twojego konta
+              </div>
+            </div>
+
+            <div class="d-grid mt-4 pt-3 border-top">
+              <%= f.submit "Wyślij ponownie instrukcje", 
+                  class: "btn btn-secondary btn-lg d-flex align-items-center justify-content-center",
+                  data: { disable_with: "Wysyłanie..." } %>
             </div>
           <% end %>
 
-          <div class="mt-3 text-center">
-            <%= render "devise/shared/links" %>
+          <div class="mt-4 pt-3 border-top">
+            <div class="text-center">
+              <%= render "devise/shared/links" %>
+            </div>
           </div>
+        </div>
+        
+        <div class="card-footer bg-light py-3 border-top">
+          <div class="text-center">
+            <small class="text-muted d-flex align-items-center justify-content-center">
+              <%= icon('shield-check', size: 'sm', css_class: 'me-1') %>
+              Link aktywacyjny będzie ważny przez 24 godziny
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informacje dodatkowe -->
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-white py-3">
+          <h6 class="mb-0 d-flex align-items-center">
+            <%= icon('question-circle', size: 'sm', css_class: 'me-2 text-info') %>
+            Potrzebujesz pomocy?
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2 d-flex align-items-start">
+              <%= icon('check-circle', size: 'sm', css_class: 'me-2 text-success mt-1 flex-shrink-0') %>
+              <span class="text-muted">Sprawdź folder spam w swojej skrzynce email</span>
+            </li>
+            <li class="mb-2 d-flex align-items-start">
+              <%= icon('check-circle', size: 'sm', css_class: 'me-2 text-success mt-1 flex-shrink-0') %>
+              <span class="text-muted">Upewnij się, że wpisałeś poprawny adres email</span>
+            </li>
+            <li class="d-flex align-items-start">
+              <%= icon('check-circle', size: 'sm', css_class: 'me-2 text-success mt-1 flex-shrink-0') %>
+              <span class="text-muted">Jeśli problem się powtarza, skontaktuj się z administratorem</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

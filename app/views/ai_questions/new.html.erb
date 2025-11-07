@@ -1,93 +1,125 @@
-<%# app/views/ai_questions/new.html.erb %>
-<div class="container mt-5">
+<%= render 'shared/icons' %>
+
+<div class="container-fluid py-4">
   <div class="row">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-header">
-          <h4 class="mb-0">✨ Generuj pytania AI dla: <%= @quiz.title %></h4>
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <%= icon('robot', size: 'xl', css_class: 'text-primary') %>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h1 class="h4 mb-1 text-gray-800">Generuj pytania AI</h1>
+              <p class="text-muted mb-0">Dla: <%= @quiz.title %></p>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
+        
+        <div class="card-body p-4">
           <%= form_with url: classroom_quiz_ai_questions_path(@classroom, @quiz), 
                       method: :post, 
                       local: true,
                       data: { turbo: false },
-                      id: 'generate-form' do |form| %>
+                      id: 'generate-form',
+                      class: 'needs-validation' do |form| %>
           
-          <div class="mb-3">
-            <%= form.label :prompt, "Opisz tematykę pytań", class: "form-label" %>
+          <div class="mb-4">
+            <%= form.label :prompt, class: "form-label fw-medium text-gray-700" do %>
+              <%= icon_with_text('edit', 'Opisz tematykę pytań', size: 'sm') %>
+            <% end %>
             <%= form.text_area :prompt, 
-                            class: "form-control", 
+                            class: "form-control form-control-lg", 
                             rows: 4,
                             placeholder: "np.: 'Podstawy programowania w Ruby - pętle, warunki, metody. Poziom początkujący.'",
                             required: true,
                             value: params[:prompt] || "" %>
+            <div class="form-text text-muted">
+              Opisz szczegółowo tematykę, poziom trudności i kontekst pytań
+            </div>
           </div>
 
-          <div class="mb-3">
-            <%= form.label :count, "Liczba pytań do wygenerowania", class: "form-label" %>
-            <%= form.select :count, [1, 2, 3, 5], { selected: params[:count] || 3 }, class: "form-select" %>
+          <div class="mb-4">
+            <%= form.label :count, class: "form-label fw-medium text-gray-700" do %>
+              <%= icon_with_text('hash', 'Liczba pytań do wygenerowania', size: 'sm') %>
+            <% end %>
+            <%= form.select :count, [1, 2, 3, 5], { selected: params[:count] || 3 }, class: "form-select form-select-lg" %>
           </div>
 
-          <div class="d-flex gap-2">
+          <div class="d-flex gap-3 mt-4 pt-3 border-top">
             <%= form.submit "Generuj pytania", 
-                          class: "btn btn-primary", 
+                          class: "btn btn-primary btn-lg flex-fill d-flex align-items-center justify-content-center", 
                           data: { disable_with: "Generowanie..." },
                           onclick: "showProgressModal(event)" %>
-            <%= link_to "Anuluj", classroom_quiz_path(@classroom, @quiz), class: "btn btn-secondary" %>
+            <%= link_to classroom_quiz_path(@classroom, @quiz), class: "btn btn-outline-secondary flex-fill d-flex align-items-center justify-content-center" do %>
+              <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+              Anuluj
+            <% end %>
           </div>
           <% end %>
+        </div>
+      </div>
 
-          <!-- PROSTY MODAL (bez Bootstrap) -->
-          <div id="progressModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
-            <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 90%; text-align: center;">
-              <h5>🔄 Generowanie pytań AI</h5>
-              <div style="width: 3rem; height: 3rem; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 1rem auto;"></div>
-              <p id="progress-text" style="margin: 1rem 0; font-size: 1.1rem;">Przygotowywanie...</p>
-              <div style="height: 20px; background: #e9ecef; border-radius: 4px; margin: 1rem 0; overflow: hidden;">
-                <div id="progress-bar" style="height: 100%; background: linear-gradient(90deg, #007bff, #0056b3); width: 0%; transition: width 0.5s ease-in-out;"></div>
-              </div>
-              <small class="text-muted" id="progress-detail" style="display: block; margin-top: 0.5rem;">To może zająć do 30 sekund</small>
-              <div id="progress-time" style="font-size: 0.8rem; color: #6c757d; margin-top: 0.5rem;"></div>
+      <!-- Modal postępu -->
+      <div id="progressModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="bg-white rounded-3 shadow-lg p-4" style="max-width: 400px; width: 90%;">
+          <div class="text-center">
+            <h5 class="text-gray-800 mb-3">
+              <%= icon('robot', size: 'lg', css_class: 'me-2 text-primary') %>
+              Generowanie pytań AI
+            </h5>
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p id="progress-text" class="text-gray-700 mb-2">Przygotowywanie...</p>
+            <div class="progress mb-2" style="height: 8px;">
+              <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
             </div>
+            <small class="text-muted d-block" id="progress-detail">To może zająć do 30 sekund</small>
+            <div id="progress-time" class="text-muted small mt-2"></div>
           </div>
         </div>
       </div>
 
-      <%# ✅ KOMUNIKATY %>
+      <!-- Komunikaty -->
       <% if flash[:success] %>
-        <div class="alert alert-success mt-4 alert-dismissible fade show" role="alert">
-          <%= flash[:success] %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-success mt-4 alert-dismissible fade show d-flex align-items-center" role="alert">
+          <%= icon('check-circle', size: 'lg', css_class: 'me-2 flex-shrink-0') %>
+          <div class="flex-grow-1"><%= flash[:success] %></div>
+          <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert"></button>
         </div>
       <% elsif flash[:error] %>
-        <div class="alert alert-danger mt-4 alert-dismissible fade show" role="alert">
-          <%= flash[:error] %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-danger mt-4 alert-dismissible fade show d-flex align-items-center" role="alert">
+          <%= icon('exclamation-triangle', size: 'lg', css_class: 'me-2 flex-shrink-0') %>
+          <div class="flex-grow-1"><%= flash[:error] %></div>
+          <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert"></button>
         </div>
       <% end %>
 
-      <%# ✅ LISTA WYGENEROWANYCH PYTAŃ %>
+      <!-- Lista wygenerowanych pytań -->
       <% if @ai_questions.is_a?(Array) && @ai_questions.any? %>
-        <div class="card mt-4">
-          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">🎯 Wygenerowane pytania (<%= @ai_questions.size %>)</h5>
-            <div>
-              <%= button_to "✅ Dodaj wszystkie", 
-                          add_all_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
+        <div class="card shadow-sm border-0 mt-4">
+          <div class="card-header bg-success text-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0 d-flex align-items-center">
+                <%= icon('check-circle', size: 'sm', css_class: 'me-2') %>
+                Wygenerowane pytania (<%= @ai_questions.size %>)
+              </h5>
+              <div class="d-flex gap-2">
+                <%= button_to add_all_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
                           method: :post,
-                          class: "btn btn-light btn-sm me-2",
-                          form: { data: { turbo_confirm: "Na pewno dodać wszystkie #{@ai_questions.size} pytań do quizu?" } } %>
-              
-                <%= button_to "🗑️ Wyczyść", 
-                            clear_questions_classroom_quiz_ai_questions_path(@classroom, @quiz),
-                            method: :delete,
-                            class: "btn btn-outline-light btn-sm",
-                            form: { 
-                                data: { 
-                                turbo_confirm: "Na pewno wyczyścić wszystkie wygenerowane pytania?",
-                                turbo_action: "replace" 
-                                } 
-                            } %>
+                          class: "btn btn-light btn-sm d-flex align-items-center",
+                          form: { data: { turbo_confirm: "Na pewno dodać wszystkie #{@ai_questions.size} pytań do quizu?" } } do %>
+                  <%= icon('plus', size: 'sm', css_class: 'me-1') %>
+                  Dodaj wszystkie
+                <% end %>
+                
+                <%= button_to clear_questions_classroom_quiz_ai_questions_path(@classroom, @quiz),
+                          method: :delete,
+                          class: "btn btn-outline-light btn-sm d-flex align-items-center",
+                          form: { data: { turbo_confirm: "Na pewno wyczyścić wszystkie wygenerowane pytania?" } } do %>
+                  <%= icon('trash', size: 'sm', css_class: 'me-1') %>
+                  Wyczyść
+                <% end %>
+              </div>
             </div>
           </div>
           <div class="card-body">
@@ -97,12 +129,18 @@
               <% if question_data.is_a?(Hash) && answers.is_a?(Array) && answers.any? %>
                 <div class="generated-question mb-4 p-3 border rounded" id="question-<%= index %>">
                   <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h6 class="mb-0">Pytanie <%= index + 1 %>:</h6>
-                    <span class="badge bg-primary">Wielokrotny wybór</span>
+                    <h6 class="mb-0 d-flex align-items-center">
+                      <%= icon('question-circle', size: 'sm', css_class: 'me-2 text-gray-500') %>
+                      Pytanie <%= index + 1 %>
+                    </h6>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                      <%= icon('check-double', size: 'sm', css_class: 'me-1') %>
+                      Wielokrotny wybór
+                    </span>
                   </div>
                   
                   <% content = question_data[:content] || question_data["content"] %>
-                  <p class="fw-bold fs-5 mb-3"><%= content || "Brak treści pytania" %></p>
+                  <p class="fw-bold text-gray-800 mb-3"><%= content || "Brak treści pytania" %></p>
                   
                   <div class="answers">
                     <% answers.each_with_index do |answer, answer_index| %>
@@ -115,7 +153,10 @@
                           <label class="form-check-label <%= 'text-success fw-bold' if answer_correct %>">
                             <%= answer_content %>
                             <% if answer_correct %> 
-                              <span class="badge bg-success ms-1">Poprawna</span>
+                              <span class="badge bg-success-subtle text-success border border-success-subtle ms-1">
+                                <%= icon('check', size: 'xs', css_class: 'me-1') %>
+                                Poprawna
+                              </span>
                             <% end %>
                           </label>
                         </div>
@@ -123,33 +164,24 @@
                     <% end %>
                   </div>
 
-                  <div class="mt-3 pt-3 border-top">
-                    <%= button_to "✅ Dodaj to pytanie", 
-                                add_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
-                                method: :post,
-                                params: { 
-                                  question_data: question_data.to_json,
-                                  question_index: index
-                                },
-                                class: "btn btn-success btn-sm me-2",
-                                form: { data: { turbo_confirm: "Na pewno dodać to pytanie do quizu?" } } %>
+                  <div class="mt-3 pt-3 border-top d-flex gap-2">
+                    <%= button_to add_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
+                              method: :post,
+                              params: { 
+                                question_data: question_data.to_json,
+                                question_index: index
+                              },
+                              class: "btn btn-success btn-sm d-flex align-items-center",
+                              form: { data: { turbo_confirm: "Na pewno dodać to pytanie do quizu?" } } do %>
+                      <%= icon('plus', size: 'sm', css_class: 'me-1') %>
+                      Dodaj to pytanie
+                    <% end %>
                     
-                    <button type="button" class="btn btn-outline-danger btn-sm skip-btn" 
+                    <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center skip-btn" 
                            data-question-id="question-<%= index %>">
-                      ❌ Pomiń
+                      <%= icon('x', size: 'sm', css_class: 'me-1') %>
+                      Pomiń
                     </button>
-                  </div>
-                </div>
-              <% else %>
-                <div class="alert alert-warning mb-3">
-                  <strong>Pytanie <%= index + 1 %>:</strong> Niepoprawna struktura danych
-                  <div class="mt-2">
-                    <small class="text-muted">
-                      <strong>Debug info:</strong><br>
-                      question_data type: <%= question_data.class %><br>
-                      answers type: <%= answers.class %><br>
-                      answers count: <%= answers.is_a?(Array) ? answers.size : 'N/A' %>
-                    </small>
                   </div>
                 </div>
               <% end %>
@@ -157,60 +189,83 @@
           </div>
         </div>
       <% elsif flash[:notice] %>
-        <div class="alert alert-info mt-4">
-          <%= flash[:notice] %>
-          <div class="mt-2">
-            <%= link_to "Generuj więcej pytań", new_classroom_quiz_ai_questions_path(@classroom, @quiz), class: "btn btn-primary btn-sm me-2" %>
-            <%= link_to "Przejdź do quizu", classroom_quiz_path(@classroom, @quiz), class: "btn btn-success btn-sm" %>
+        <div class="alert alert-info mt-4 d-flex align-items-center">
+          <%= icon('info-circle', size: 'lg', css_class: 'me-3 flex-shrink-0 text-info') %>
+          <div class="flex-grow-1">
+            <%= flash[:notice] %>
+            <div class="mt-2 d-flex gap-2">
+              <%= link_to new_classroom_quiz_ai_questions_path(@classroom, @quiz), class: "btn btn-primary btn-sm d-flex align-items-center" do %>
+                <%= icon('robot', size: 'sm', css_class: 'me-1') %>
+                Generuj więcej pytań
+              <% end %>
+              <%= link_to classroom_quiz_path(@classroom, @quiz), class: "btn btn-success btn-sm d-flex align-items-center" do %>
+                <%= icon('arrow-right', size: 'sm', css_class: 'me-1') %>
+                Przejdź do quizu
+              <% end %>
+            </div>
           </div>
         </div>
       <% end %>
     </div>
 
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">💡 Przykłady promptów</h5>
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0 d-flex align-items-center">
+            <%= icon('lightbulb', size: 'sm', css_class: 'me-2 text-warning') %>
+            Przykłady promptów
+          </h5>
         </div>
         <div class="card-body">
-          <ul class="list-unstyled small">
-            <li class="mb-2">
-              <strong>Ruby on Rails:</strong><br>
-              <span class="text-muted">"Podstawy MVC, migracje bazy danych, relacje ActiveRecord"</span>
-            </li>
-            <li class="mb-2">
-              <strong>Matematyka:</strong><br>
-              <span class="text-muted">"Równania kwadratowe, funkcje liniowe, pierwiastki"</span>
-            </li>
-            <li class="mb-2">
-              <strong>Historia:</strong><br>
-              <span class="text-muted">"II Wojna Światowa - najważniejsze bitwy, postanowienia"</span>
-            </li>
-            <li class="mb-2">
-              <strong>Biologia:</strong><br>
-              <span class="text-muted">"Fotosynteza - etapy, rola chlorofilu, czynniki"</span>
-            </li>
-          </ul>
+          <div class="list-group list-group-flush">
+            <div class="list-group-item px-0 border-0">
+              <strong class="d-block text-gray-700">Ruby on Rails</strong>
+              <small class="text-muted">"Podstawy MVC, migracje bazy danych, relacje ActiveRecord"</small>
+            </div>
+            <div class="list-group-item px-0 border-0">
+              <strong class="d-block text-gray-700">Matematyka</strong>
+              <small class="text-muted">"Równania kwadratowe, funkcje liniowe, pierwiastki"</small>
+            </div>
+            <div class="list-group-item px-0 border-0">
+              <strong class="d-block text-gray-700">Historia</strong>
+              <small class="text-muted">"II Wojna Światowa - najważniejsze bitwy, postanowienia"</small>
+            </div>
+            <div class="list-group-item px-0 border-0">
+              <strong class="d-block text-gray-700">Biologia</strong>
+              <small class="text-muted">"Fotosynteza - etapy, rola chlorofilu, czynniki"</small>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- DEBUG INFO -->
-      <div class="card mt-3">
-        <div class="card-header">
-          <h6 class="mb-0">🐛 Debug Info</h6>
+      <!-- Debug Info -->
+      <div class="card shadow-sm border-0 mt-3">
+        <div class="card-header bg-white py-3">
+          <h6 class="mb-0 d-flex align-items-center">
+            <%= icon('bug', size: 'sm', css_class: 'me-2 text-secondary') %>
+            Informacje debug
+          </h6>
         </div>
         <div class="card-body">
-          <p><strong>User ID:</strong> <%= current_user.id %></p>
-          <p><strong>Quiz ID:</strong> <%= @quiz.id %></p>
-          <p><strong>Generation Key:</strong> ai_generation_user_<%= current_user.id %>_quiz_<%= @quiz.id %></p>
-          <p><strong>Questions in cache:</strong> <%= @ai_questions.size if @ai_questions.is_a?(Array) %></p>
-          <p><small class="text-muted">Klucz cache jest używany do śledzenia postępu między requestami</small></p>
+          <dl class="row small mb-0">
+            <dt class="col-sm-5 text-gray-600">User ID:</dt>
+            <dd class="col-sm-7"><%= current_user.id %></dd>
+            
+            <dt class="col-sm-5 text-gray-600">Quiz ID:</dt>
+            <dd class="col-sm-7"><%= @quiz.id %></dd>
+            
+            <dt class="col-sm-5 text-gray-600">Generation Key:</dt>
+            <dd class="col-sm-7"><code>ai_generation_user_<%= current_user.id %>_quiz_<%= @quiz.id %></code></dd>
+            
+            <dt class="col-sm-5 text-gray-600">Questions in cache:</dt>
+            <dd class="col-sm-7"><%= @ai_questions.size if @ai_questions.is_a?(Array) %></dd>
+          </dl>
+          <small class="text-muted mt-2 d-block">Klucz cache jest używany do śledzenia postępu między requestami</small>
         </div>
       </div>
     </div>
   </div>
 </div>
-
 
 <script>
 // Sprawdź czy style już istnieje przed dodaniem

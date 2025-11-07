@@ -1,93 +1,202 @@
-<%# app/views/quizzes/new.html.erb %>
-<div class="container mt-5">
+<%= render 'shared/icons' %>
+
+<div class="container-fluid py-4">
   <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-header">
-          <h4 class="mb-0">Nowy Quiz w klasie: <%= @classroom.name %></h4>
+    <div class="col-xl-8 col-lg-10">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <%= icon('plus-circle', size: 'xl', css_class: 'text-primary') %>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h1 class="h4 mb-1 text-gray-800">Utwórz nowy quiz</h1>
+              <p class="text-muted mb-0">Klasa: <%= @classroom.name %></p>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
-          <%= form_with model: [@classroom, @quiz], local: true do |form| %>
+        
+        <div class="card-body p-4">
+          <%= form_with model: [@classroom, @quiz], local: true, class: "needs-validation", novalidate: true do |form| %>
             <% if @quiz.errors.any? %>
-              <div class="alert alert-danger">
-                <h5><%= pluralize(@quiz.errors.count, "błąd") %> uniemożliwia zapisanie quizu:</h5>
-                <ul>
-                  <% @quiz.errors.full_messages.each do |message| %>
-                    <li><%= message %></li>
-                  <% end %>
-                </ul>
+              <div class="alert alert-danger d-flex align-items-start mb-4">
+                <%= icon('exclamation-triangle', size: 'lg', css_class: 'me-3 mt-1 flex-shrink-0 text-danger') %>
+                <div class="flex-grow-1">
+                  <h5 class="alert-heading">
+                    <%= pluralize(@quiz.errors.count, "błąd") %> uniemożliwia zapisanie quizu:
+                  </h5>
+                  <ul class="mb-0">
+                    <% @quiz.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
               </div>
             <% end %>
 
             <!-- Podstawowe informacje -->
-            <div class="mb-3">
-              <%= form.label :title, "Tytuł quizu", class: "form-label" %>
-              <%= form.text_field :title, class: "form-control", placeholder: "Wprowadź tytuł quizu..." %>
+            <div class="mb-4">
+              <%= form.label :title, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('tag', 'Tytuł quizu', size: 'sm') %>
+              <% end %>
+              <%= form.text_field :title, 
+                  class: "form-control form-control-lg", 
+                  placeholder: "Wprowadź tytuł quizu...",
+                  required: true,
+                  autofocus: true %>
+              <div class="form-text text-muted">
+                Nadaj quizowi czytelny i opisowy tytuł
+              </div>
             </div>
 
-            <div class="mb-3">
-              <%= form.label :description, "Opis", class: "form-label" %>
-              <%= form.text_area :description, class: "form-control", rows: 3, placeholder: "Opisz czego dotyczy quiz..." %>
+            <div class="mb-4">
+              <%= form.label :description, class: "form-label fw-medium text-gray-700" do %>
+                <%= icon_with_text('document-text', 'Opis quizu', size: 'sm') %>
+              <% end %>
+              <%= form.text_area :description, 
+                  class: "form-control", 
+                  rows: 4,
+                  placeholder: "Opisz czego dotyczy quiz, jaki materiał obejmuje..." %>
+              <div class="form-text text-muted">
+                Opcjonalny opis pomagający uczniom zrozumieć zakres quizu
+              </div>
             </div>
 
             <!-- Ustawienia czasu -->
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <%= form.label :start_time, "Czas rozpoczęcia", class: "form-label" %>
+            <div class="border-top pt-4 mt-4">
+              <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                <%= icon('clock', size: 'sm', css_class: 'me-2 text-warning') %>
+                Harmonogram dostępności
+              </h5>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <%= form.label :start_time, class: "form-label fw-medium text-gray-700" do %>
+                    <%= icon_with_text('play', 'Czas rozpoczęcia', size: 'sm') %>
+                  <% end %>
                   <%= form.datetime_local_field :start_time, class: "form-control" %>
-                  <div class="form-text">Kiedy quiz stanie się dostępny dla uczniów</div>
+                  <div class="form-text text-muted">
+                    Kiedy quiz stanie się dostępny dla uczniów
+                  </div>
                 </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <%= form.label :end_time, "Czas zakończenia", class: "form-label" %>
+                <div class="col-md-6">
+                  <%= form.label :end_time, class: "form-label fw-medium text-gray-700" do %>
+                    <%= icon_with_text('stop', 'Czas zakończenia', size: 'sm') %>
+                  <% end %>
                   <%= form.datetime_local_field :end_time, class: "form-control" %>
-                  <div class="form-text">Kiedy quiz przestanie być dostępny</div>
+                  <div class="form-text text-muted">
+                    Kiedy quiz przestanie być dostępny
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Limity czasu -->
-            <div class="mb-3">
-              <%= form.label :time_limit, "Limit czasu (minuty)", class: "form-label" %>
-              <%= form.number_field :time_limit, class: "form-control", min: 0, placeholder: "0 = bez limitu czasu" %>
-              <div class="form-text">Czas na rozwiązanie całego quizu. 0 oznacza brak limitu.</div>
+            <div class="border-top pt-4 mt-4">
+              <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                <%= icon('hourglass', size: 'sm', css_class: 'me-2 text-info') %>
+                Ustawienia czasu
+              </h5>
+              
+              <div class="mb-4">
+                <%= form.label :time_limit, class: "form-label fw-medium text-gray-700" do %>
+                  <%= icon_with_text('timer', 'Limit czasu (minuty)', size: 'sm') %>
+                <% end %>
+                <%= form.number_field :time_limit, 
+                    class: "form-control", 
+                    min: 0, 
+                    max: 300,
+                    placeholder: "0",
+                    value: form.object.time_limit || 0 %>
+                <div class="form-text text-muted">
+                  Czas na rozwiązanie całego quizu. <strong>0 oznacza brak limitu czasu.</strong>
+                </div>
+              </div>
             </div>
 
             <!-- Dodatkowe opcje -->
-            <div class="mb-4">
-              <div class="form-check">
-                <%= form.check_box :shuffle_questions, class: "form-check-input" %>
-                <%= form.label :shuffle_questions, "Losowa kolejność pytań", class: "form-check-label" %>
-                <div class="form-text">Każdy uczeń otrzyma pytania w losowej kolejności</div>
+            <div class="border-top pt-4 mt-4">
+              <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                <%= icon('cog', size: 'sm', css_class: 'me-2 text-secondary') %>
+                Dodatkowe ustawienia
+              </h5>
+              
+              <div class="mb-3">
+                <div class="form-check">
+                  <%= form.check_box :shuffle_questions, class: "form-check-input" %>
+                  <%= form.label :shuffle_questions, class: "form-check-label text-gray-700 d-flex align-items-center" do %>
+                    <%= icon('shuffle', size: 'sm', css_class: 'me-2 text-primary') %>
+                    Losowa kolejność pytań
+                  <% end %>
+                </div>
+                <div class="form-text text-muted ms-4">
+                  Każdy uczeń otrzyma pytania w losowej kolejności
+                </div>
               </div>
 
-              <div class="form-check mt-2">
-                <%= form.check_box :active, class: "form-check-input" %>
-                <%= form.label :active, "Aktywny", class: "form-check-label" %>
-                <div class="form-text">Quiz będzie widoczny dla uczniów</div>
+              <div class="mb-3">
+                <div class="form-check">
+                  <%= form.check_box :active, class: "form-check-input" %>
+                  <%= form.label :active, class: "form-check-label text-gray-700 d-flex align-items-center" do %>
+                    <%= icon('eye', size: 'sm', css_class: 'me-2 text-success') %>
+                    Aktywny quiz
+                  <% end %>
+                </div>
+                <div class="form-text text-muted ms-4">
+                  Quiz będzie widoczny i dostępny dla uczniów
+                </div>
               </div>
             </div>
 
             <!-- Przyciski -->
-            <div class="d-flex gap-2">
-              <%= form.submit "Utwórz Quiz", class: "btn btn-primary" %>
-              <%= link_to "Anuluj", classroom_path(@classroom), class: "btn btn-secondary" %>
+            <div class="d-flex gap-3 mt-4 pt-4 border-top">
+              <%= form.submit "Utwórz quiz", 
+                  class: "btn btn-primary btn-lg flex-fill d-flex align-items-center justify-content-center",
+                  data: { disable_with: "Tworzenie..." } %>
+              
+              <%= link_to classroom_path(@classroom), 
+                    class: "btn btn-outline-secondary flex-fill d-flex align-items-center justify-content-center" do %>
+                <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+                Anuluj
+              <% end %>
             </div>
           <% end %>
         </div>
       </div>
 
       <!-- Informacja pomocnicza -->
-      <div class="card mt-3">
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-white py-3">
+          <h6 class="mb-0 d-flex align-items-center">
+            <%= icon('information-circle', size: 'sm', css_class: 'me-2 text-info') %>
+            Informacje o tworzeniu quizów
+          </h6>
+        </div>
         <div class="card-body">
-          <h6>Informacje:</h6>
-          <ul class="small text-muted mb-0">
-            <li>Po utworzeniu quizu będziesz mógł dodać pytania i odpowiedzi</li>
-            <li>Quiz można aktywować/deaktywować w dowolnym momencie</li>
-            <li>Ustawienia czasu można zmienić później</li>
-          </ul>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <h6 class="text-gray-700 d-flex align-items-center mb-2">
+                <%= icon('plus-circle', size: 'sm', css_class: 'me-2 text-success') %>
+                Kolejne kroki
+              </h6>
+              <ul class="small text-muted mb-0">
+                <li>Po utworzeniu quizu dodasz pytania</li>
+                <li>Możesz użyć generatora AI do szybkiego tworzenia pytań</li>
+                <li>Quiz można edytować w dowolnym momencie</li>
+              </ul>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h6 class="text-gray-700 d-flex align-items-center mb-2">
+                <%= icon('cog', size: 'sm', css_class: 'me-2 text-primary') %>
+                Elastyczność
+              </h6>
+              <ul class="small text-muted mb-0">
+                <li>Aktywuj/deaktywuj quiz kiedy chcesz</li>
+                <li>Zmień ustawienia czasu później</li>
+                <li>Dostosuj do potrzeb klasy</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

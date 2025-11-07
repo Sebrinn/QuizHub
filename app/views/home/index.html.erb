@@ -1,22 +1,223 @@
-<!-- app/views/home/index.html.erb -->
-<div style="max-width: 600px; margin: 100px auto; text-align: center; padding: 20px;">
-  <h1>🎯 QuizHub</h1>
-  <p style="font-size: 1.2em; margin: 20px 0;">Platforma edukacyjna do quizów</p>
-  
-  <% if user_signed_in? %>
-    <p>Witaj <strong><%= current_user.first_name %>!</strong></p>
-    <p>Twoja rola: <strong><%= current_user.role %></strong></p>
-    
-    <%= link_to "Wyloguj się", destroy_user_session_path, 
-                data: { turbo_method: :delete },
-                style: "background: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;" %>
-  <% else %>
-    <div style="margin: 30px 0;">
-      <%= link_to "Zaloguj się", new_user_session_path, 
-                  style: "background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 0 10px;" %>
-      
-      <%= link_to "Zarejestruj się", new_user_registration_path,
-                  style: "background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 0 10px;" %>
+<%= render 'shared/icons' %>
+
+<div class="container-fluid min-vh-100 bg-gradient-primary">
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="row align-items-center min-vh-100 py-5">
+      <div class="col-lg-8 mx-auto text-center">
+        <!-- Logo i nagłówek -->
+        <div class="mb-5">
+          <div class="d-flex justify-content-center align-items-center mb-4">
+            <div class="bg-white rounded-circle p-3 shadow-lg me-3">
+              <%= icon('academic-cap', size: 'xl', css_class: 'text-primary') %>
+            </div>
+            <h1 class="display-4 fw-bold text-white mb-0">QuizHub</h1>
+          </div>
+          <p class="lead text-white-50 mb-4 fs-4">
+            Platforma edukacyjna do tworzenia i rozwiązywania quizów
+          </p>
+        </div>
+
+        <!-- Dla zalogowanych użytkowników -->
+        <% if user_signed_in? %>
+          <div class="card shadow-lg border-0 mb-5">
+            <div class="card-body py-5">
+              <div class="row justify-content-center">
+                <div class="col-md-8">
+                  <div class="d-flex align-items-center justify-content-center mb-4">
+                    <%= icon('user-circle', size: 'xl', css_class: 'text-primary me-3') %>
+                    <div class="text-start">
+                      <h3 class="h4 text-gray-800 mb-1">Witaj, <strong><%= current_user.first_name %>!</strong></h3>
+                      <span class="badge bg-<%= current_user.teacher? ? 'success' : 'primary' %>-subtle text-<%= current_user.teacher? ? 'success' : 'primary' %> border border-<%= current_user.teacher? ? 'success' : 'primary' %>-subtle">
+                        <%= icon(current_user.teacher? ? 'academic-cap' : 'user', size: 'sm', css_class: 'me-1') %>
+                        <%= current_user.role.humanize %>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Szybkie akcje -->
+                  <div class="row g-3 mb-4 justify-content-center">
+                    <% if policy(:classroom).index? %>
+                      <% if current_user.teacher? && policy(:classroom).new? %>
+                        <!-- Dwa przyciski obok siebie -->
+                        <div class="col-md-6 col-lg-4">
+                          <%= link_to classrooms_path, class: "btn btn-primary w-100 d-flex align-items-center justify-content-center" do %>
+                            <%= icon('book-open', size: 'sm', css_class: 'me-2') %>
+                            Moje klasy
+                          <% end %>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                          <%= link_to new_classroom_path, class: "btn btn-success w-100 d-flex align-items-center justify-content-center" do %>
+                            <%= icon('plus', size: 'sm', css_class: 'me-2') %>
+                            Nowa klasa
+                          <% end %>
+                        </div>
+
+                      <% else %>
+                        <!-- Jeden przycisk wyśrodkowany -->
+                        <div class="col-md-6 col-lg-4">
+                          <%= link_to classrooms_path, class: "btn btn-primary w-100 d-flex align-items-center justify-content-center mx-auto" do %>
+                            <%= icon('book-open', size: 'sm', css_class: 'me-2') %>
+                            Moje klasy
+                          <% end %>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  </div>
+
+                  <!-- Panel administracyjny dla nauczycieli/adminów -->
+                  <% if current_user.teacher? || current_user.admin? %>
+                    <div class="border-top pt-4 mt-4">
+                      <h5 class="text-gray-700 mb-3 d-flex align-items-center justify-content-center">
+                        <%= icon('cog', size: 'sm', css_class: 'me-2 text-secondary') %>
+                        Panel administracyjny
+                      </h5>
+                      <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <% if policy(:invitation).index? %>
+                          <%= link_to admin_invitations_path, class: "btn btn-outline-primary btn-sm d-flex align-items-center" do %>
+                            <%= icon('envelope', size: 'xs', css_class: 'me-1') %>
+                            Zaproszenia
+                          <% end %>
+                        <% end %>
+                        <% if policy(:user).index? %>
+                          <%= link_to admin_users_path, class: "btn btn-outline-success btn-sm d-flex align-items-center" do %>
+                            <%= icon('users', size: 'xs', css_class: 'me-1') %>
+                            Użytkownicy
+                          <% end %>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-light py-3">
+              <div class="text-center">
+                <%= link_to destroy_user_session_path, 
+                      data: { turbo_method: :delete },
+                      class: "btn btn-outline-danger btn-sm d-flex align-items-center mx-auto" do %>
+                  <%= icon('logout', size: 'xs', css_class: 'me-1') %>
+                  Wyloguj się
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <!-- Dla niezalogowanych użytkowników -->
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <div class="card shadow-lg border-0 mb-5">
+                <div class="card-body py-5">
+                  <h2 class="h3 text-gray-800 mb-4">Dołącz do naszej platformy</h2>
+                  
+                  <!-- Korzyści -->
+                  <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                      <div class="d-flex flex-column align-items-center">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                          <%= icon('academic-cap', size: 'lg', css_class: 'text-primary') %>
+                        </div>
+                        <h5 class="text-gray-700 mb-2">Nauczanie</h5>
+                        <p class="text-muted small text-center">Twórz quizy i śledź postępy uczniów</p>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex flex-column align-items-center">
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3 mb-3">
+                          <%= icon('chart-bar', size: 'lg', css_class: 'text-success') %>
+                        </div>
+                        <h5 class="text-gray-700 mb-2">Nauka</h5>
+                        <p class="text-muted small text-center">Rozwiązuj quizy i sprawdzaj swoją wiedzę</p>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex flex-column align-items-center">
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3 mb-3">
+                          <%= icon('users', size: 'lg', css_class: 'text-info') %>
+                        </div>
+                        <h5 class="text-gray-700 mb-2">Współpraca</h5>
+                        <p class="text-muted small text-center">Dołącz do klas i ucz się razem</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Przyciski logowania/rejestracji -->
+                  <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <%= link_to new_user_session_path, 
+                          class: "btn btn-primary btn-lg px-4 d-flex align-items-center" do %>
+                      <%= icon('login', size: 'sm', css_class: 'me-2') %>
+                      Zaloguj się
+                    <% end %>
+                    
+                    <%= link_to new_user_registration_path,
+                          class: "btn btn-success btn-lg px-4 d-flex align-items-center" do %>
+                      <%= icon('user-plus', size: 'sm', css_class: 'me-2') %>
+                      Zarejestruj się
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Statystyki platformy (dla wszystkich) -->
+        <div class="row justify-content-center">
+          <div class="col-lg-10">
+            <div class="card shadow border-0 bg-white bg-opacity-10">
+              <div class="card-body py-4">
+                <h3 class="h5 text-white text-center mb-4">Platforma w liczbach</h3>
+                <div class="row text-center">
+                  <div class="col-md-3 mb-3">
+                    <div class="text-white">
+                      <div class="fs-2 fw-bold"><%= number_with_delimiter(User.count, delimiter: " ") %></div>
+                      <small class="text-white-50">Użytkowników</small>
+                    </div>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <div class="text-white">
+                      <div class="fs-2 fw-bold"><%= number_with_delimiter(Classroom.count, delimiter: " ") %></div>
+                      <small class="text-white-50">Klas</small>
+                    </div>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <div class="text-white">
+                      <div class="fs-2 fw-bold"><%= number_with_delimiter(Quiz.count, delimiter: " ") %></div>
+                      <small class="text-white-50">Quizów</small>
+                    </div>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <div class="text-white">
+                      <div class="fs-2 fw-bold"><%= number_with_delimiter(Question.count, delimiter: " ") %></div>
+                      <small class="text-white-50">Pytań</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  <% end %>
+  </div>
 </div>
+
+<style>
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #6f42c1 100%);
+}
+
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+.card {
+  backdrop-filter: blur(10px);
+}
+
+.bg-white.bg-opacity-10 {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+</style>

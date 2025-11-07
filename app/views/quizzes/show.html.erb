@@ -1,128 +1,297 @@
-<%# app/views/quizzes/show.html.erb %>
-<div class="container mt-5">
+<%= render 'shared/icons' %>
+
+<div class="container-fluid py-4">
   <div class="row">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="mb-0"><%= @quiz.title %></h4>
-          <span class="badge bg-<%= status_badge_color(@quiz.status) %>">
-            <%= quiz_status_text(@quiz.status) %>
-          </span>
-        </div>
-        <div class="card-body">
-          <p class="card-text"><%= @quiz.description %></p>
-
-          <% if @quiz.start_time %>
-            <div class="row">
-              <div class="col-md-6">
-                <p><strong>Start:</strong> <%= @quiz.start_time.strftime("%d.%m.%Y %H:%M") %></p>
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-4 border-bottom">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                <%= icon('clipboard-list', size: 'xl', css_class: 'text-primary') %>
               </div>
-              <div class="col-md-6">
-                <p><strong>Koniec:</strong> <%= @quiz.end_time.strftime("%d.%m.%Y %H:%M") %></p>
+              <div class="flex-grow-1 ms-3">
+                <h1 class="h4 mb-1 text-gray-800"><%= @quiz.title %></h1>
+                <p class="text-muted mb-0">Klasa: <%= @classroom.name %></p>
               </div>
             </div>
-          <% end %>
-
-          <% if @quiz.time_limit && @quiz.time_limit > 0 %>
-            <p><strong>Limit czasu:</strong> <%= @quiz.time_limit %> minut</p>
-          <% end %>
-
-          <p>
-            <strong>Losowa kolejność pytań:</strong> 
-            <%= @quiz.shuffle_questions ? 'Tak' : 'Nie' %>
-          </p>
-
-          <div class="mt-4">
-            <h5>Pytania: <%= @quiz.questions.count %></h5>
-            
-            <% if @quiz.questions.any? %>
-            <div class="list-group mt-3">
-                <% @quiz.questions.each_with_index do |question, index| %>
-                <div class="list-group-item" id="question-<%= question.id %>">
-                    <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h6 class="mb-1">Pytanie <%= index + 1 %>: <%= question.content %></h6>
-                        <p class="mb-1 small text-muted">Typ: <%= question.question_type %></p>
-                        <p class="mb-1 small">Odpowiedzi: <%= question.answers.count %></p>
-                        <% correct_answers = question.answers.where(correct: true) %>
-                        <% if correct_answers.any? %>
-                        <p class="mb-0 small text-success">
-                            Poprawne odpowiedzi: <%= correct_answers.map(&:content).join(', ') %>
-                        </p>
-                        <% end %>
-                    </div>
-                    <div class="btn-group btn-group-sm">
-                        <%= link_to 'Edytuj', edit_classroom_quiz_question_path(@classroom, @quiz, question), class: 'btn btn-outline-secondary' %>
-                        <%= button_to 'Usuń', classroom_quiz_question_path(@classroom, @quiz, question), 
-                                    method: :delete, 
-                                    data: { turbo_confirm: 'Na pewno chcesz usunąć to pytanie?' },
-                                    class: 'btn btn-outline-danger' %>
-                    </div>
-                    </div>
-                </div>
-                <% end %>
-            </div>
-            <% else %>
-            <div class="alert alert-info">
-                Brak pytań w tym quizie.
-            </div>
-            <% end %>
-
+            <span class="badge bg-<%= status_badge_color(@quiz.status) %>-subtle text-<%= status_badge_color(@quiz.status) %> border border-<%= status_badge_color(@quiz.status) %>-subtle fs-6">
+              <%= quiz_status_text(@quiz.status) %>
+            </span>
           </div>
         </div>
-        <div class="card-footer">
-          <div class="d-flex gap-2 flex-wrap">
+        
+        <div class="card-body p-4">
+          <% if @quiz.description.present? %>
+            <p class="text-gray-600 mb-4"><%= @quiz.description %></p>
+          <% end %>
+
+          <!-- Informacje o quizie -->
+          <div class="row g-4 mb-4">
+            <% if @quiz.start_time %>
+              <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                  <%= icon('play', size: 'sm', css_class: 'me-2 text-success') %>
+                  <div>
+                    <small class="text-gray-600 d-block">Start quizu</small>
+                    <strong class="text-gray-800"><%= @quiz.start_time.strftime("%d.%m.%Y %H:%M") %></strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                  <%= icon('stop', size: 'sm', css_class: 'me-2 text-danger') %>
+                  <div>
+                    <small class="text-gray-600 d-block">Koniec quizu</small>
+                    <strong class="text-gray-800"><%= @quiz.end_time.strftime("%d.%m.%Y %H:%M") %></strong>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
+            <% if @quiz.time_limit && @quiz.time_limit > 0 %>
+              <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                  <%= icon('timer', size: 'sm', css_class: 'me-2 text-warning') %>
+                  <div>
+                    <small class="text-gray-600 d-block">Limit czasu</small>
+                    <strong class="text-gray-800"><%= @quiz.time_limit %> minut</strong>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="col-md-6">
+              <div class="d-flex align-items-center">
+                <%= icon('shuffle', size: 'sm', css_class: 'me-2 text-info') %>
+                <div>
+                  <small class="text-gray-600 d-block">Kolejność pytań</small>
+                  <strong class="text-gray-800"><%= @quiz.shuffle_questions ? 'Losowa' : 'Standardowa' %></strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sekcja pytań -->
+          <div class="border-top pt-4">
+            <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+              <%= icon('question-mark-circle', size: 'sm', css_class: 'me-2 text-primary') %>
+              Pytania (<%= @quiz.questions.count %>)
+            </h5>
+            
+            <% if @quiz.questions.any? %>
+              <div class="list-group list-group-flush">
+                <% @quiz.questions.each_with_index do |question, index| %>
+                  <div class="list-group-item border-0 px-0 py-3" id="question-<%= question.id %>">
+                    <div class="card border">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                          <div class="flex-grow-1">
+                            <h6 class="card-title text-gray-800 mb-2">
+                              Pytanie <%= index + 1 %>: <%= question.content %>
+                            </h6>
+                            <div class="d-flex gap-3 flex-wrap">
+                              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small">
+                                <%= icon('collection', size: 'xs', css_class: 'me-1') %>
+                                <%= question.question_type.humanize %>
+                              </span>
+                              <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">
+                                <%= icon('chat-alt', size: 'xs', css_class: 'me-1') %>
+                                <%= question.answers.count %> odpowiedzi
+                              </span>
+                              <% correct_answers = question.answers.where(correct: true) %>
+                              <% if correct_answers.any? %>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small">
+                                  <%= icon('check', size: 'xs', css_class: 'me-1') %>
+                                  <%= correct_answers.count %> poprawnych
+                                </span>
+                              <% end %>
+                            </div>
+                          </div>
+                          <% if policy(question).edit? || policy(question).destroy? %>
+                            <div class="btn-group btn-group-sm flex-shrink-0">
+                              <% if policy(question).edit? %>
+                                <%= link_to edit_classroom_quiz_question_path(@classroom, @quiz, question), 
+                                      class: "btn btn-outline-primary d-flex align-items-center",
+                                      title: "Edytuj pytanie" do %>
+                                  <%= icon('pencil', size: 'xs', css_class: 'me-1') %>
+                                  Edytuj
+                                <% end %>
+                              <% end %>
+                              <% if policy(question).destroy? %>
+                                <%= button_to classroom_quiz_question_path(@classroom, @quiz, question), 
+                                      method: :delete, 
+                                      data: { turbo_confirm: 'Na pewno chcesz usunąć to pytanie?' },
+                                      class: "btn btn-outline-danger d-flex align-items-center",
+                                      title: "Usuń pytanie" do %>
+                                  <%= icon('trash', size: 'xs', css_class: 'me-1') %>
+                                  Usuń
+                                <% end %>
+                              <% end %>
+                            </div>
+                          <% end %>
+                        </div>
+                        
+                        <!-- Podgląd poprawnych odpowiedzi (tylko dla nauczyciela) -->
+                        <% if current_user.teacher? && correct_answers.any? %>
+                          <div class="mt-3 pt-3 border-top">
+                            <small class="text-gray-600 d-block mb-2">
+                              <strong>Poprawne odpowiedzi:</strong>
+                            </small>
+                            <div class="d-flex flex-wrap gap-2">
+                              <% correct_answers.each do |answer| %>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                  <%= icon('check', size: 'xs', css_class: 'me-1') %>
+                                  <%= answer.content %>
+                                </span>
+                              <% end %>
+                            </div>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <%= icon('question-mark-circle', size: 'xl', css_class: 'text-gray-300 mb-3') %>
+                <h5 class="text-gray-500">Brak pytań</h5>
+                <p class="text-muted mb-4">Ten quiz nie zawiera jeszcze żadnych pytań.</p>
+                <% if policy(@quiz).edit? %>
+                  <div class="d-flex gap-2 justify-content-center">
+                    <%= link_to new_classroom_quiz_question_path(@classroom, @quiz), 
+                          class: "btn btn-primary d-flex align-items-center" do %>
+                      <%= icon('plus', size: 'sm', css_class: 'me-2') %>
+                      Dodaj pierwsze pytanie
+                    <% end %>
+                    <%= link_to new_classroom_quiz_ai_questions_path(@classroom, @quiz), 
+                          class: "btn btn-warning d-flex align-items-center" do %>
+                      <%= icon('robot', size: 'sm', css_class: 'me-2') %>
+                      Generuj AI
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-footer bg-white py-4 border-top">
+          <div class="d-flex gap-3 flex-wrap">
             <% if policy(@quiz).edit? %>
-            <%= link_to "Edytuj quiz", edit_classroom_quiz_path(@classroom, @quiz), class: "btn btn-primary" %>
-            <%= link_to "Dodaj pytanie", new_classroom_quiz_question_path(@classroom, @quiz), class: "btn btn-success" %>
-            <%= link_to "✨ Generuj AI", new_classroom_quiz_ai_questions_path(@classroom, @quiz), class: "btn btn-warning" %>
+              <%= link_to edit_classroom_quiz_path(@classroom, @quiz), 
+                    class: "btn btn-primary d-flex align-items-center" do %>
+                <%= icon('pencil', size: 'sm', css_class: 'me-2') %>
+                Edytuj quiz
+              <% end %>
+              
+              <%= link_to new_classroom_quiz_question_path(@classroom, @quiz), 
+                    class: "btn btn-success d-flex align-items-center" do %>
+                <%= icon('plus', size: 'sm', css_class: 'me-2') %>
+                Dodaj pytanie
+              <% end %>
+              
+              <%= link_to new_classroom_quiz_ai_questions_path(@classroom, @quiz), 
+                    class: "btn btn-warning d-flex align-items-center" do %>
+                <%= icon('robot', size: 'sm', css_class: 'me-2') %>
+                Generuj AI
+              <% end %>
             <% end %>
 
             <% if current_user.student? && policy(@quiz).start? %>
-              <%= link_to "Rozpocznij quiz", start_classroom_quiz_path(@classroom, @quiz), class: "btn btn-success" %>
+              <%= link_to start_classroom_quiz_path(@classroom, @quiz), 
+                    class: "btn btn-success d-flex align-items-center" do %>
+                <%= icon('play', size: 'sm', css_class: 'me-2') %>
+                Rozpocznij quiz
+              <% end %>
             <% end %>
 
             <% if policy(@quiz).results? %>
-              <%= link_to "Wyniki", results_classroom_quiz_path(@classroom, @quiz), class: "btn btn-info" %>
+              <%= link_to results_classroom_quiz_path(@classroom, @quiz), 
+                    class: "btn btn-info d-flex align-items-center" do %>
+                <%= icon('chart-bar', size: 'sm', css_class: 'me-2') %>
+                Wyniki
+              <% end %>
             <% end %>
 
-            <%= link_to "Powrót do klasy", classroom_path(@classroom), class: "btn btn-secondary" %>
+            <%= link_to classroom_path(@classroom), 
+                  class: "btn btn-outline-secondary d-flex align-items-center" do %>
+              <%= icon('arrow-left', size: 'sm', css_class: 'me-2') %>
+              Powrót do klasy
+            <% end %>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Statystyki</h5>
+    <!-- Panel boczny -->
+    <div class="col-lg-4">
+      <!-- Statystyki -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0 d-flex align-items-center">
+            <%= icon('chart-bar', size: 'sm', css_class: 'me-2 text-info') %>
+            Statystyki quizu
+          </h5>
         </div>
         <div class="card-body">
-          <p><strong>Liczba pytań:</strong> <%= @quiz.questions.count %></p>
-          <p><strong>Liczba rozwiązań:</strong> <%= @quiz.quiz_results.count %></p>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-gray-600 d-flex align-items-center">
+              <%= icon('question-mark-circle', size: 'sm', css_class: 'me-2') %>
+              Liczba pytań:
+            </span>
+            <strong class="text-gray-800"><%= @quiz.questions.count %></strong>
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-gray-600 d-flex align-items-center">
+              <%= icon('users', size: 'sm', css_class: 'me-2') %>
+              Liczba rozwiązań:
+            </span>
+            <strong class="text-gray-800"><%= @quiz.quiz_results.count %></strong>
+          </div>
           
           <% if @quiz.quiz_results.any? %>
-            <p><strong>Średni wynik:</strong> 
-              <%= number_to_percentage(@quiz.quiz_results.average(:score).to_f / @quiz.quiz_results.average(:total).to_f * 100, precision: 1) %>
-            </p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-gray-600 d-flex align-items-center">
+                <%= icon('trophy', size: 'sm', css_class: 'me-2') %>
+                Średni wynik:
+              </span>
+              <strong class="text-gray-800">
+                <%= number_to_percentage(@quiz.quiz_results.average(:score).to_f / @quiz.quiz_results.average(:total).to_f * 100, precision: 1) %>
+              </strong>
+            </div>
           <% end %>
         </div>
       </div>
 
+      <!-- Zarządzanie -->
       <% if policy(@quiz).activate? || policy(@quiz).deactivate? %>
-        <div class="card mt-3">
-          <div class="card-header">
-            <h5 class="mb-0">Zarządzanie</h5>
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white py-3">
+            <h5 class="mb-0 d-flex align-items-center">
+              <%= icon('cog', size: 'sm', css_class: 'me-2 text-warning') %>
+              Zarządzanie quizem
+            </h5>
           </div>
           <div class="card-body">
             <% if @quiz.active? %>
-              <%= button_to "Deaktywuj quiz", deactivate_classroom_quiz_path(@classroom, @quiz), 
-                          method: :patch, 
-                          class: "btn btn-warning btn-sm w-100" %>
+              <%= button_to deactivate_classroom_quiz_path(@classroom, @quiz), 
+                    method: :patch, 
+                    class: "btn btn-warning w-100 d-flex align-items-center justify-content-center",
+                    data: { turbo_confirm: "Czy na pewno chcesz deaktywować ten quiz?" } do %>
+                <%= icon('eye-off', size: 'sm', css_class: 'me-2') %>
+                Deaktywuj quiz
+              <% end %>
             <% else %>
-              <%= button_to "Aktywuj quiz", activate_classroom_quiz_path(@classroom, @quiz), 
-                          method: :patch, 
-                          class: "btn btn-success btn-sm w-100" %>
+              <%= button_to activate_classroom_quiz_path(@classroom, @quiz), 
+                    method: :patch, 
+                    class: "btn btn-success w-100 d-flex align-items-center justify-content-center",
+                    data: { turbo_confirm: "Czy na pewno chcesz aktywować ten quiz?" } do %>
+                <%= icon('eye', size: 'sm', css_class: 'me-2') %>
+                Aktywuj quiz
+              <% end %>
             <% end %>
           </div>
         </div>
@@ -132,59 +301,37 @@
 </div>
 
 <script>
-console.log('=== DEBUG ANCHOR ===');
-console.log('Current URL:', window.location.href);
-console.log('Hash:', window.location.hash);
-
-// Dla Turbo
+// Prostsza wersja obsługi anchor - bez debugowania
 document.addEventListener('turbo:load', function() {
-  console.log('TURBO LOAD - Hash:', window.location.hash);
   handleAnchorNavigation();
 });
 
-// Dla normalnego ładowania (na wypadek)
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM CONTENT LOADED - Hash:', window.location.hash);
   handleAnchorNavigation();
 });
 
 function handleAnchorNavigation() {
   const hash = window.location.hash;
-  console.log('Handling hash:', hash);
   
   if (hash) {
-    // Turbo potrzebuje czasu na render - dajemy opóźnienie
     setTimeout(() => {
       const targetElement = document.querySelector(hash);
-      console.log('Target element after delay:', targetElement);
       
       if (targetElement) {
-        console.log('✅ FOUND ELEMENT - adding highlight');
         targetElement.classList.add('question-highlight');
         
-        // Przewiń do elementu
         targetElement.scrollIntoView({ 
           behavior: 'smooth',
           block: 'center'
         });
         
-        // Usuń podświetlenie po 3 sekundach
         setTimeout(() => {
-          console.log('Removing highlight');
           targetElement.classList.remove('question-highlight');
         }, 3000);
-      } else {
-        console.log('❌ ELEMENT NOT FOUND with selector:', hash);
-        
-        // Debug: pokaż wszystkie elementy z ID
-        const allIds = document.querySelectorAll('[id]');
-        console.log('All IDs on page:');
-        allIds.forEach(el => console.log(`- ${el.id}`));
       }
-    }, 300); // Opóźnienie dla Turbo
+    }, 300);
   }
 }
 
-// Uruchom też bezpośrednio (na wypadek)
 setTimeout(handleAnchorNavigation, 500);
 </script>

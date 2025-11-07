@@ -1,8 +1,7 @@
-<!-- app/views/layouts/application.html.erb -->
 <!DOCTYPE html>
-<html>
+<html lang="pl">
   <head>
-    <title>QuizHub</title>
+    <title>QuizHub - Platforma Edukacyjna</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -15,10 +14,14 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <body class="bg-light d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
       <div class="container">
-        <%= link_to "QuizHub", root_path, class: "navbar-brand" %>
+        <%= link_to root_path, class: "navbar-brand d-flex align-items-center fw-bold" do %>
+          <%= icon('academic-cap', size: 'lg', css_class: 'me-2') %>
+          QuizHub
+        <% end %>
         
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
@@ -27,31 +30,79 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <% if user_signed_in? %>
+              <!-- Menu dla zalogowanych użytkowników -->
+              <li class="nav-item">
+                <%= link_to classrooms_path, class: "nav-link d-flex align-items-center" do %>
+                  <%= icon('book-open', size: 'sm', css_class: 'me-1') %>
+                  Moje klasy
+                <% end %>
+              </li>
+              
+              <!-- Dropdown admina -->
+              <% if policy(:invitation).index? || policy(:user).index? %>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                    <%= icon('cog', size: 'sm', css_class: 'me-1') %>
+                    Administracja
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <% if policy(:invitation).index? %>
+                      <li>
+                        <%= link_to admin_invitations_path, class: "dropdown-item d-flex align-items-center" do %>
+                          <%= icon('envelope', size: 'sm', css_class: 'me-2 text-primary') %>
+                          Zaproszenia
+                        <% end %>
+                      </li>
+                    <% end %>
+                    <% if policy(:user).index? %>
+                      <li>
+                        <%= link_to admin_users_path, class: "dropdown-item d-flex align-items-center" do %>
+                          <%= icon('users', size: 'sm', css_class: 'me-2 text-success') %>
+                          Użytkownicy
+                        <% end %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </li>
+              <% end %>
+
+              <!-- Dropdown użytkownika -->
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                  Panel
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                  <%= icon('user-circle', size: 'sm', css_class: 'me-1') %>
+                  <%= current_user.full_name %>
                 </a>
-                <ul class="dropdown-menu">
-                  <% if policy(:invitation).index? %>
-                    <li><%= link_to "Zaproszenia", admin_invitations_path, class: "dropdown-item" %></li>
-                  <% end %>
-                  <% if policy(:user).index? %>
-                    <li><%= link_to "Użytkownicy", admin_users_path, class: "dropdown-item" %></li>
-                  <% end %>
-                  <% if policy(:classroom).index? %>
-                    <li><%= link_to "Klasy", classrooms_path, class: "dropdown-item" %></li>
-                  <% end %>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                  <li>
+                    <%= link_to edit_user_registration_path, class: "dropdown-item d-flex align-items-center" do %>
+                      <%= icon('cog', size: 'sm', css_class: 'me-2 text-secondary') %>
+                      Edytuj profil
+                    <% end %>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <%= link_to destroy_user_session_path, 
+                          data: { turbo_method: :delete }, 
+                          class: "dropdown-item d-flex align-items-center text-danger" do %>
+                      <%= icon('logout', size: 'sm', css_class: 'me-2') %>
+                      Wyloguj
+                    <% end %>
+                  </li>
                 </ul>
               </li>
-              <li class="nav-item">
-                <%= link_to "Wyloguj", destroy_user_session_path, data: { turbo_method: :delete }, class: "nav-link" %>
-              </li>
             <% else %>
+              <!-- Menu dla niezalogowanych -->
               <li class="nav-item">
-                <%= link_to "Logowanie", new_user_session_path, class: "nav-link" %>
+                <%= link_to new_user_session_path, class: "nav-link d-flex align-items-center" do %>
+                  <%= icon('login', size: 'sm', css_class: 'me-1') %>
+                  Logowanie
+                <% end %>
               </li>
               <li class="nav-item">
-                <%= link_to "Rejestracja", new_user_registration_path, class: "nav-link" %>
+                <%= link_to new_user_registration_path, class: "nav-link d-flex align-items-center" do %>
+                  <%= icon('user-plus', size: 'sm', css_class: 'me-1') %>
+                  Rejestracja
+                <% end %>
               </li>
             <% end %>
           </ul>
@@ -59,24 +110,81 @@
       </div>
     </nav>
 
-    <div class="container mt-3">
-      <% if notice %>
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-          <%= notice %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% end %>
-      
-      <% if alert %>
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-          <%= alert %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% end %>
-    </div>
+    <!-- Flash messages -->
+    <% if notice || alert %>
+      <div class="container mt-3">
+        <% if notice %>
+          <div class="alert alert-info alert-dismissible fade show d-flex align-items-center shadow-sm" role="alert">
+            <%= icon('info-circle', size: 'lg', css_class: 'me-3 flex-shrink-0 text-info') %>
+            <div class="flex-grow-1"><%= notice %></div>
+            <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert"></button>
+          </div>
+        <% end %>
+        
+        <% if alert %>
+          <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center shadow-sm" role="alert">
+            <%= icon('exclamation-triangle', size: 'lg', css_class: 'me-3 flex-shrink-0 text-warning') %>
+            <div class="flex-grow-1"><%= alert %></div>
+            <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert"></button>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
 
-    <main class="container my-4">
+    <!-- Main content -->
+    <main class="container my-4 flex-grow-1">
       <%= yield %>
     </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5 mt-auto">
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-md-4">
+            <h5 class="d-flex align-items-center mb-3">
+              <%= icon('academic-cap', size: 'sm', css_class: 'me-2 text-primary') %>
+              QuizHub
+            </h5>
+            <p class="text-white-50 mb-0">
+              Platforma edukacyjna do tworzenia i rozwiązywania quizów.
+            </p>
+          </div>
+
+          <div class="col-md-4">
+            <h5 class="mb-3">Kontakt</h5>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2 d-flex align-items-center">
+                <%= icon('envelope', size: 'sm', css_class: 'me-2 text-info') %>
+                <span class="text-white-50">sebastian.krzywda@student.pk.edu.pl</span>
+              </li>
+              <li class="mb-2 d-flex align-items-center">
+                <%= icon('user-tag', size: 'sm', css_class: 'me-2 text-warning') %>
+                <span class="text-white-50">Obsługa użytkownika</span>
+              </li>
+              <li class="d-flex align-items-center">
+                <%= icon('clock', size: 'sm', css_class: 'me-2 text-success') %>
+                <span class="text-white-50">Pon–Pt: 9:00–17:00</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-md-4 text-md-end">
+            <h5 class="mb-3">Social Media</h5>
+            <div class="d-flex gap-3 justify-content-md-end">
+              <%= icon('at', size: 'lg', css_class: 'text-primary hover-icon') %>
+              <%= icon('user-circle', size: 'lg', css_class: 'text-light hover-icon') %>
+              <%= icon('lightbulb', size: 'lg', css_class: 'text-warning hover-icon') %>
+            </div>
+            <p class="text-white-50 mt-3 mb-0 small">
+              &copy; <%= Date.current.year %> QuizHub. Wszelkie prawa zastrzeżone.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+
+    <!-- SVG Sprite dla ikon -->
+    <%= render 'shared/icons' if controller_name != 'devise/sessions' %>
   </body>
 </html>

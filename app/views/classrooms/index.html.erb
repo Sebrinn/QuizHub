@@ -1,33 +1,126 @@
-<div class="container mt-5">
-  <h2>Moje klasy</h2>
+<%= render 'shared/icons' %>
 
-  <% if current_user.teacher? %>
-    <%= link_to "➕ Utwórz nową klasę", new_classroom_path, class: "btn btn-success mb-3" %>
-  <% end %>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 text-gray-800"><%= icon_with_text('users', 'Moje klasy') %></h1>
+      <p class="text-muted">Zarządzaj swoimi klasami i dołączaj do nowych</p>
+    </div>
+    
+    <% if current_user.teacher? %>
+      <%= link_to new_classroom_path, class: "btn btn-primary d-flex align-items-center" do %>
+        <%= icon('plus', size: 'sm', css_class: 'me-2') %>
+        Utwórz nową klasę
+      <% end %>
+    <% end %>
+  </div>
 
   <% if current_user.student? %>
-    <div class="card mb-4 p-3">
-      <h5>Dołącz do klasy</h5>
-      <%= form_with url: join_classrooms_path, method: :post, local: true do %>
-        <div class="input-group">
-          <%= text_field_tag :invite_code, nil, class: "form-control", placeholder: "Wpisz kod zaproszenia" %>
-          <%= submit_tag "Dołącz", class: "btn btn-primary" %>
-        </div>
-      <% end %>
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0 d-flex align-items-center">
+          <%= icon('key', size: 'sm', css_class: 'me-2 text-primary') %>
+          Dołącz do klasy
+        </h5>
+      </div>
+      <div class="card-body">
+        <%= form_with url: join_classrooms_path, method: :post, local: true, class: "needs-validation", novalidate: true do %>
+          <div class="row g-2">
+            <div class="col-md-8">
+              <%= text_field_tag :invite_code, nil, 
+                  class: "form-control form-control-lg", 
+                  placeholder: "Wpisz kod zaproszenia",
+                  required: true %>
+            </div>
+            <div class="col-md-4">
+              <%= submit_tag "Dołącz do klasy", 
+                  class: "btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center" %>
+            </div>
+          </div>
+          <div class="form-text text-muted mt-2">
+            Poproś nauczyciela o kod zaproszenia do klasy
+          </div>
+        <% end %>
+      </div>
     </div>
   <% end %>
 
-  <div class="row">
-    <% @classrooms.each do |classroom| %>
-      <div class="col-md-4 mb-3">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title"><%= classroom.name %></h5>
-            <p><%= truncate(classroom.description, length: 100) %></p>
-            <%= link_to "Zobacz", classroom_path(classroom), class: "btn btn-outline-success btn-sm" %>
+  <% if @classrooms.any? %>
+    <div class="row">
+      <% @classrooms.each do |classroom| %>
+        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-bottom">
+              <div class="d-flex justify-content-between align-items-start">
+                <h5 class="card-title mb-0 text-gray-800 d-flex align-items-center">
+                  <%= icon('book-open', size: 'sm', css_class: 'me-2 text-primary') %>
+                  <%= classroom.name %>
+                </h5>
+                <% if classroom.invite_code.present? %>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">
+                    <%= icon('key', size: 'xs', css_class: 'me-1') %>
+                    <%= classroom.invite_code %>
+                  </span>
+                <% end %>
+              </div>
+            </div>
+            
+            <div class="card-body d-flex flex-column">
+              <% if classroom.description.present? %>
+                <p class="text-gray-600 flex-grow-1 mb-3">
+                  <%= truncate(classroom.description, length: 120) %>
+                </p>
+              <% else %>
+                <p class="text-muted flex-grow-1 mb-3">
+                  Brak opisu klasy
+                </p>
+              <% end %>
+              
+              <div class="mt-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <small class="text-muted d-flex align-items-center">
+                    <%= icon('users', size: 'sm', css_class: 'me-1') %>
+                    <%= pluralize(classroom.students.count, 'student', 'studentów') %>
+                  </small>
+                  <small class="text-muted d-flex align-items-center">
+                    <%= icon('clipboard-list', size: 'sm', css_class: 'me-1') %>
+                    <%= pluralize(classroom.quizzes.count, 'quiz', 'quizów') %>
+                  </small>
+                </div>
+                
+                <%= link_to classroom_path(classroom), class: "btn btn-outline-primary w-100 d-flex align-items-center justify-content-center" do %>
+                  <%= icon('arrow-right', size: 'sm', css_class: 'me-2') %>
+                  Przejdź do klasy
+                <% end %>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    <% end %>
-  </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-5">
+      <%= icon('users', size: 'xl', css_class: 'text-gray-300 mb-3') %>
+      <h5 class="text-gray-500">
+        <% if current_user.teacher? %>
+          Nie masz jeszcze żadnych klas
+        <% else %>
+          Nie należysz jeszcze do żadnej klasy
+        <% end %>
+      </h5>
+      <p class="text-muted mb-4">
+        <% if current_user.teacher? %>
+          Utwórz swoją pierwszą klasę, aby rozpocząć tworzenie quizów
+        <% else %>
+          Dołącz do klasy używając kodu zaproszenia od nauczyciela
+        <% end %>
+      </p>
+      <% if current_user.teacher? %>
+        <%= link_to new_classroom_path, class: "btn btn-primary d-inline-flex align-items-center" do %>
+          <%= icon('plus', size: 'sm', css_class: 'me-2') %>
+          Utwórz pierwszą klasę
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
 </div>

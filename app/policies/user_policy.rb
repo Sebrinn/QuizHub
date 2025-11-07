@@ -8,7 +8,7 @@ class UserPolicy
   end
 
   def index?
-    @user.admin? || @user.teacher?
+    @user.admin?
   end
 
   def promote_to_teacher?
@@ -32,8 +32,8 @@ class UserPolicy
     def resolve
       if @user.admin?
         @scope.all
-      elsif @user.teacher?
-        @scope.where(role: [ :student, :teacher ])
+      # elsif @user.teacher?
+      #   @scope.where(role: [ :student, :teacher ])
       else
         @scope.where(id: @user.id)
       end
