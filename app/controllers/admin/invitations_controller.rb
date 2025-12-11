@@ -17,12 +17,11 @@ def create
   @invitation.invited_by = current_user
   authorize @invitation
 
-  # DEBUG: Sprawdź błędy
+
   if @invitation.save
     InvitationMailer.teacher_invitation(@invitation).deliver_later
     redirect_to admin_invitations_path, notice: "Zaproszenie zostało wysłane do #{@invitation.email}"
   else
-    # DEBUG: Wyświetl błędy w konsoli
     puts "=== BŁĘDY WALIDACJI ==="
     puts @invitation.errors.full_messages
     puts "======================="

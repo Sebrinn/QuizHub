@@ -175,7 +175,7 @@
               <%= icon('clipboard-list', size: 'xl', css_class: 'text-gray-300 mb-3') %>
               <h6 class="text-gray-500">Brak quizów w tej klasie</h6>
               <p class="text-muted mb-3">Utwórz pierwszy quiz, aby rozpocząć</p>
-              <% if policy(@classroom).edit? %>
+              <% if (current_user.teacher? && @classroom.teacher == current_user) %>
                 <%= link_to new_classroom_quiz_path(@classroom), class: "btn btn-primary d-flex align-items-center mx-auto" do %>
                   <%= icon('plus', size: 'sm', css_class: 'me-2') %>
                   Utwórz pierwszy quiz

@@ -8,7 +8,7 @@ class AiQuestionsController < ApplicationController
   def new
     authorize @quiz, :edit?
     @ai_questions = load_questions_from_cache || []
-    puts "🔍 DEBUG: Loaded #{@ai_questions.size} questions from cache for key: #{@generation_key}"
+    puts "DEBUG: Loaded #{@ai_questions.size} questions from cache for key: #{@generation_key}"
   end
 
   def create
@@ -18,9 +18,8 @@ class AiQuestionsController < ApplicationController
     count  = params[:count].to_i
     count = 1 if count <= 0
 
-    puts "🔍 DEBUG: Starting generation - key: #{@generation_key}, count: #{count}"
+    puts "DEBUG: Starting generation - key: #{@generation_key}, count: #{count}"
 
-    # Zapisz postęp w MemoryStore
     save_progress_to_cache({
       total: count,
       current: 0,
@@ -37,7 +36,7 @@ class AiQuestionsController < ApplicationController
         status: "in_progress"
       })
 
-      puts "🔍 DEBUG: Generating question #{i + 1}/#{count}"
+      puts "DEBUG: Generating question #{i + 1}/#{count}"
 
       question = generator.generate_single_question(prompt, i + 1)
       generated_questions << question if question
@@ -51,13 +50,11 @@ class AiQuestionsController < ApplicationController
       sleep(1) if count > 1 && i < count - 1
     end
 
-    # Zapisz pytania w MemoryStore
     save_questions_to_cache(generated_questions)
 
-    # Wyczyść postęp po zakończeniu
     clear_progress_from_cache
 
-    puts "🔍 DEBUG: Generation completed, saved #{generated_questions.size} questions to cache"
+    puts "DEBUG: Generation completed, saved #{generated_questions.size} questions to cache"
 
     @ai_questions = generated_questions
     render :new
@@ -72,7 +69,7 @@ class AiQuestionsController < ApplicationController
       status: "not_started"
     }
 
-    puts "🔍 DEBUG generating_status: #{progress.inspect} (key: #{@generation_key})"
+    puts "DEBUG generating_status: #{progress.inspect} (key: #{@generation_key})"
 
     render json: progress
   end
@@ -88,12 +85,11 @@ class AiQuestionsController < ApplicationController
       @question = @quiz.questions.new(normalized_question)
 
       if @question.save
-        # Usuń pytanie z cache po indexie
         questions = load_questions_from_cache || []
         if questions[question_index]
           questions.delete_at(question_index)
           save_questions_to_cache(questions)
-          puts "🔍 DEBUG: Removed question #{question_index}, #{questions.size} remaining"
+          puts "DEBUG: Removed question #{question_index}, #{questions.size} remaining"
         end
 
         @ai_questions = load_questions_from_cache || []
@@ -125,7 +121,7 @@ class AiQuestionsController < ApplicationController
     error_count = 0
 
     questions = load_questions_from_cache || []
-    puts "🔍 DEBUG: Adding all #{questions.size} questions to quiz"
+    puts "DEBUG: Adding all #{questions.size} questions to quiz"
 
     if questions.any?
       questions.each do |question_data|
@@ -154,7 +150,7 @@ class AiQuestionsController < ApplicationController
   def clear_questions
     authorize @quiz, :edit?
 
-    puts "🔍 DEBUG: Clearing questions for key: #{@generation_key}"
+    puts "DEBUG: Clearing questions for key: #{@generation_key}"
     clear_questions_from_cache
 
     redirect_to new_classroom_quiz_ai_questions_path(@classroom, @quiz),
@@ -162,7 +158,7 @@ class AiQuestionsController < ApplicationController
   end
 
   private
-  # Reszta metod pozostaje bez zmian
+
   def ensure_questions_structure(questions)
     return [] unless questions.is_a?(Array)
 
@@ -199,25 +195,22 @@ class AiQuestionsController < ApplicationController
   end
 
   def set_generation_key
-    # ✅ Unikalny klucz na podstawie użytkownika i quizu
     @generation_key = "ai_generation_user_#{current_user.id}_quiz_#{@quiz.id}"
-    puts "🔍 DEBUG: Generation key set to: #{@generation_key}"
+    puts "DEBUG: Generation key set to: #{@generation_key}"
   end
 
-  # ✅ METODY DO PRACY Z MEMORYSTORE
 
   def save_progress_to_cache(progress)
     Rails.cache.write("#{@generation_key}_progress", progress, expires_in: 1.hour)
-    puts "🔍 DEBUG: Progress saved to cache: #{progress}"
+    puts "DEBUG: Progress saved to cache: #{progress}"
 
-    # ✅ DEBUG: Sprawdź czy naprawdę zapisano
     test_read = Rails.cache.read("#{@generation_key}_progress")
     puts "🔍 DEBUG: Immediately after save, read back: #{test_read}"
   end
 
   def load_progress_from_cache
     progress = Rails.cache.read("#{@generation_key}_progress")
-    puts "🔍 DEBUG: Progress loaded from cache: #{progress}"
+    puts "DEBUG: Progress loaded from cache: #{progress}"
     progress
   end
 

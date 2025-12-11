@@ -18,17 +18,14 @@ class Users::RegistrationsController < Devise::RegistrationsController
     puts "=== CREATE DEBUG ==="
     puts "All params: #{params.inspect}"
 
-    # Pobierz token ZANIM użyjesz sign_up_params
     invitation_token = params[:user] && params[:user][:invitation_token]
     puts "Raw invitation_token from params: #{invitation_token}"
 
     @invitation = Invitation.find_by(token: invitation_token) if invitation_token
     puts "Found invitation: #{@invitation.inspect}"
 
-    # Teraz zbuduj resource (token już nie będzie w sign_up_params)
     build_resource(sign_up_params)
 
-    # Ustaw rolę z zaproszenia
     if @invitation && !@invitation.expired? && @invitation.pending?
       puts "Setting role to: #{@invitation.role}"
       resource.role = @invitation.role
@@ -44,14 +41,13 @@ class Users::RegistrationsController < Devise::RegistrationsController
       puts "=== USER SAVED SUCCESSFULLY ==="
       puts "User ID: #{resource.id}, Email: #{resource.email}, Role: #{resource.role}"
 
-      # 🔥 🔥 🔥 PRZENIEŚ AKCEPTACJĘ TUTAJ 🔥 🔥 🔥
       puts "=== ACCEPTING INVITATION ==="
       if @invitation && @invitation.pending?
         puts "ACCEPTING INVITATION: #{@invitation.id}, Status: #{@invitation.status}"
         if @invitation.accept!(resource)
-          puts "✅ INVITATION ACCEPTED: #{@invitation.status}"
+          puts "INVITATION ACCEPTED: #{@invitation.status}"
         else
-          puts "❌ FAILED TO ACCEPT INVITATION"
+          puts "FAILED TO ACCEPT INVITATION"
         end
       else
         puts "No invitation to accept or already accepted"
@@ -59,12 +55,10 @@ class Users::RegistrationsController < Devise::RegistrationsController
         puts "Invitation pending?: #{@invitation.pending?}" if @invitation
       end
       puts "=== END ACCEPTANCE ==="
-      # 🔥 🔥 🔥 KONIEC PRZENIESIENIA 🔥 🔥 🔥
 
       if resource.active_for_authentication?
         set_flash_message! :notice, :signed_up
 
-        # Wyczyść sesję
         session.delete(:invitation_token) if session[:invitation_token]
 
         sign_up(resource_name, resource)
@@ -75,7 +69,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
         respond_with resource, location: after_inactive_sign_up_path_for(resource)
       end
     else
-      puts "❌ USER SAVE FAILED: #{resource.errors.full_messages}"
+      puts "USER SAVE FAILED: #{resource.errors.full_messages}"
       clean_up_passwords resource
       set_minimum_password_length
       respond_with resource
