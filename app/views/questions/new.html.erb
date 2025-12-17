@@ -74,6 +74,24 @@
               </div>
             </div>
 
+            <div id="open_ended_section" style="display: none;">
+              <div class="mb-4">
+                <%= form.label :max_score, class: "form-label fw-medium text-gray-700" do %>
+                  <%= icon_with_text('star', 'Maksymalna punktacja', size: 'sm') %>
+                <% end %>
+                <%= form.number_field :max_score, 
+                      class: "form-control form-control-lg", 
+                      min: 1, 
+                      max: 100,
+                      value: 5,
+                      required: true %>
+                <div class="form-text text-muted">
+                  Maksymalna liczba punktów za to pytanie otwarte. 
+                  Nauczyciel będzie mógł przyznać od 0 do tej wartości.
+                </div>
+              </div>
+            </div>
+
             <!-- Sekcja odpowiedzi -->
             <div class="border-top pt-4 mt-4" id="multiple_choice_section">
               <h5 class="text-gray-700 mb-3 d-flex align-items-center">
@@ -196,15 +214,28 @@
 function initQuestionTypeToggle() {
   const questionTypeSelect = document.getElementById('question_question_type');
   const multipleChoiceSection = document.getElementById('multiple_choice_section');
+  const openEndedSection = document.getElementById('open_ended_section');
   
-  if (questionTypeSelect && multipleChoiceSection) {
-    function toggleAnswersSection() {
+  if (questionTypeSelect) {
+    function toggleSections() {
       const isMultipleChoice = questionTypeSelect.value === 'multiple_choice';
-      multipleChoiceSection.style.display = isMultipleChoice ? 'block' : 'none';
+      
+      if (multipleChoiceSection) {
+        multipleChoiceSection.style.display = isMultipleChoice ? 'block' : 'none';
+      }
+      
+      if (openEndedSection) {
+        openEndedSection.style.display = isMultipleChoice ? 'none' : 'block';
+      }
+      
+      if (!isMultipleChoice && multipleChoiceSection) {
+        const answerAlerts = multipleChoiceSection.querySelectorAll('.alert');
+        answerAlerts.forEach(alert => alert.style.display = 'none');
+      }
     }
     
-    questionTypeSelect.addEventListener('change', toggleAnswersSection);
-    toggleAnswersSection(); // Initialize on page load
+    questionTypeSelect.addEventListener('change', toggleSections);
+    toggleSections(); // Initialize on page load
   }
 }
 

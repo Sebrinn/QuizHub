@@ -59,6 +59,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :open_answers, only: [] do
+    member do
+      patch :grade
+      patch :request_review
+    end
+  end
+
 
   get "/test_ai", to: "test_ai#test_generation"
 end

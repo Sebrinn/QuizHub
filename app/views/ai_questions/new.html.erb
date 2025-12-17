@@ -46,6 +46,23 @@
             <%= form.select :count, [1, 2, 3, 5], { selected: params[:count] || 3 }, class: "form-select form-select-lg" %>
           </div>
 
+          <div class="mb-4">
+            <%= form.label :question_type, class: "form-label fw-medium text-gray-700" do %>
+              <%= icon_with_text('collection', 'Typ pytań', size: 'sm') %>
+            <% end %>
+            <%= form.select :question_type, 
+                          [
+                            ['Mieszane (zamknięte i otwarte)', 'mixed'],
+                            ['Tylko wielokrotny wybór', 'multiple_choice'],
+                            ['Tylko pytania otwarte', 'open_ended']
+                          ], 
+                          { selected: params[:question_type] || 'mixed' }, 
+                          class: "form-select form-select-lg" %>
+            <div class="form-text text-muted">
+              Wybierz typ generowanych pytań
+            </div>
+          </div>
+
           <div class="d-flex gap-3 mt-4 pt-3 border-top">
             <%= form.submit "Generuj pytania", 
                           class: "btn btn-primary btn-lg flex-fill d-flex align-items-center justify-content-center", 
@@ -124,24 +141,29 @@
           </div>
           <div class="card-body">
             <% @ai_questions.each_with_index do |question_data, index| %>
-              <% answers = question_data[:answers_attributes] || question_data["answers_attributes"] %>
+              <% question_type = question_data[:question_type] || question_data["question_type"] %>
+              <% max_score = question_data[:max_score] || question_data["max_score"] %>
               
-              <% if question_data.is_a?(Hash) && answers.is_a?(Array) && answers.any? %>
-                <div class="generated-question mb-4 p-3 border rounded" id="question-<%= index %>">
-                  <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h6 class="mb-0 d-flex align-items-center">
-                      <%= icon('question-circle', size: 'sm', css_class: 'me-2 text-gray-500') %>
-                      Pytanie <%= index + 1 %>
-                    </h6>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
-                      <%= icon('check-double', size: 'sm', css_class: 'me-1') %>
-                      Wielokrotny wybór
-                    </span>
-                  </div>
-                  
-                  <% content = question_data[:content] || question_data["content"] %>
-                  <p class="fw-bold text-gray-800 mb-3"><%= content || "Brak treści pytania" %></p>
-                  
+              <div class="generated-question mb-4 p-3 border rounded" id="question-<%= index %>">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <h6 class="mb-0 d-flex align-items-center">
+                    <%= icon('question-circle', size: 'sm', css_class: 'me-2 text-gray-500') %>
+                    Pytanie <%= index + 1 %>
+                  </h6>
+                  <span class="badge <%= question_type == 'open_ended' ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary' %> border <%= question_type == 'open_ended' ? 'border-info-subtle' : 'border-primary-subtle' %>">
+                    <%= icon(question_type == 'open_ended' ? 'pencil' : 'check-double', size: 'sm', css_class: 'me-1') %>
+                    <%= question_type == 'open_ended' ? 'Otwarte' : 'Wielokrotny wybór' %>
+                    <% if question_type == 'open_ended' && max_score %>
+                      <span class="ms-1">(max: <%= max_score %> pkt)</span>
+                    <% end %>
+                  </span>
+                </div>
+                
+                <% content = question_data[:content] || question_data["content"] %>
+                <p class="fw-bold text-gray-800 mb-3"><%= content || "Brak treści pytania" %></p>
+                
+                <% if question_type == 'multiple_choice' %>
+                  <% answers = question_data[:answers_attributes] || question_data["answers_attributes"] || [] %>
                   <div class="answers">
                     <% answers.each_with_index do |answer, answer_index| %>
                       <% answer_content = answer[:content] || answer["content"] %>
@@ -163,28 +185,42 @@
                       <% end %>
                     <% end %>
                   </div>
-
-                  <div class="mt-3 pt-3 border-top d-flex gap-2">
-                    <%= button_to add_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
-                              method: :post,
-                              params: { 
-                                question_data: question_data.to_json,
-                                question_index: index
-                              },
-                              class: "btn btn-success btn-sm d-flex align-items-center",
-                              form: { data: { turbo_confirm: "Na pewno dodać to pytanie do quizu?" } } do %>
-                      <%= icon('plus', size: 'sm', css_class: 'me-1') %>
-                      Dodaj to pytanie
-                    <% end %>
-                    
-                    <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center skip-btn" 
-                           data-question-id="question-<%= index %>">
-                      <%= icon('x', size: 'sm', css_class: 'me-1') %>
-                      Pomiń
-                    </button>
+                <% else %>
+                  <!-- Dla pytań otwartych -->
+                  <div class="alert alert-info d-flex align-items-start">
+                    <%= icon('info-circle', size: 'lg', css_class: 'me-3 mt-1 flex-shrink-0 text-info') %>
+                    <div class="flex-grow-1">
+                      <small>
+                        <strong>Pytanie otwarte</strong><br>
+                        Uczeń będzie musiał samodzielnie sformułować odpowiedź tekstową.<br>
+                        <span class="text-muted">
+                          Maksymalna punktacja: <%= max_score || 5 %> punktów
+                        </span>
+                      </small>
+                    </div>
                   </div>
+                <% end %>
+
+                <div class="mt-3 pt-3 border-top d-flex gap-2">
+                  <%= button_to add_to_quiz_classroom_quiz_ai_questions_path(@classroom, @quiz),
+                            method: :post,
+                            params: { 
+                              question_data: question_data.to_json,
+                              question_index: index
+                            },
+                            class: "btn btn-success btn-sm d-flex align-items-center",
+                            form: { data: { turbo_confirm: "Na pewno dodać to pytanie do quizu?" } } do %>
+                    <%= icon('plus', size: 'sm', css_class: 'me-1') %>
+                    Dodaj to pytanie
+                  <% end %>
+                  
+                  <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center skip-btn" 
+                        data-question-id="question-<%= index %>">
+                    <%= icon('x', size: 'sm', css_class: 'me-1') %>
+                    Pomiń
+                  </button>
                 </div>
-              <% end %>
+              </div>
             <% end %>
           </div>
         </div>
@@ -234,6 +270,10 @@
               <strong class="d-block text-gray-700">Biologia</strong>
               <small class="text-muted">"Fotosynteza - etapy, rola chlorofilu, czynniki"</small>
             </div>
+            <div class="list-group-item px-0 border-0">
+              <strong class="d-block text-gray-700">Dla pytań otwartych</strong>
+              <small class="text-muted">"Porównaj X i Y, wyjaśnij proces Z, opisz wpływ A na B..."</small>
+            </div>
           </div>
         </div>
       </div>
@@ -259,6 +299,14 @@
             
             <dt class="col-sm-5 text-gray-600">Questions in cache:</dt>
             <dd class="col-sm-7"><%= @ai_questions.size if @ai_questions.is_a?(Array) %></dd>
+
+            <dt class="col-sm-5 text-gray-600">Question types:</dt>
+            <dd class="col-sm-7">
+              <% if @ai_questions.is_a?(Array) %>
+                <% types = @ai_questions.map { |q| q[:question_type] || q["question_type"] } %>
+                <%= types.tally.to_json %>
+              <% end %>
+            </dd>
           </dl>
           <small class="text-muted mt-2 d-block">Klucz cache jest używany do śledzenia postępu między requestami</small>
         </div>

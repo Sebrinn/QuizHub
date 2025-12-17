@@ -144,17 +144,33 @@ class QuizzesController < ApplicationController
       return
     end
 
-    # Oblicz wynik
-    score = calculate_score(params[:answers] || {})
+    auto_score = calculate_score(params[:answers] || {})
 
-    # Zapisz wynik
-    @quiz_result.update!(score: score)
+    save_open_answers(params[:answers] || {}, @quiz_result)
+
+    @quiz_result.update!(score: auto_score)
 
     redirect_to results_classroom_quiz_path(@classroom, @quiz),
-                notice: "Quiz został zakończony. Twój wynik: #{score}/#{@quiz_result.total}"
+                notice: "Quiz został zakończony."
   end
 
   private
+
+  def save_open_answers(answers_params, quiz_result)
+    @quiz.questions.open_ended.each do |question|
+      user_answer = answers_params[question.id.to_s].to_s.strip
+
+      if user_answer.present?
+        OpenAnswer.create!(
+          question: question,
+          user: current_user,
+          quiz_result: quiz_result,
+          content: user_answer,
+          status: :pending
+        )
+      end
+    end
+  end
 
   def set_classroom
     @classroom = Classroom.find(params[:classroom_id])
@@ -192,10 +208,6 @@ end
         if user_answer_ids.sort == correct_answer_ids.sort
           score += 1
         end
-      else
-        # Dla pytań otwartych - na razie 0 punktów, można dodać ocenianie ręczne
-        # user_answer = answers_params[question.id.to_s]
-        # Tutaj można dodać logikę oceniania pytań otwartych
       end
     end
 

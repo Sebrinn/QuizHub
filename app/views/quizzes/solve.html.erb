@@ -105,17 +105,34 @@
                     <% end %>
                   </div>
                 <% else %>
-                  <div class="open-answer-container">
-                    <%= form.text_area "answers[#{question.id}]", 
-                                      class: "form-control form-control-lg open-answer",
-                                      rows: 4,
-                                      placeholder: "Wpisz swoją odpowiedź...",
-                                      style: "font-size: 1rem;" %>
-                    <div class="form-text text-muted mt-2">
-                      <%= icon('info-circle', size: 'sm', css_class: 'me-1') %>
-                      Wpisz swoją odpowiedź w polu powyżej
+                  <% if question.open_ended? %>
+                    <div class="open-answer-container mt-3">
+                      <div class="form-group">
+                        <%= form.label "answers[#{question.id}]", 
+                              "Twoja odpowiedź (maksymalnie #{question.max_score} punktów):",
+                              class: "form-label fw-medium text-gray-700" %>
+                        
+                        <%= form.text_area "answers[#{question.id}]", 
+                              class: "form-control form-control-lg open-answer-textarea",
+                              rows: 5,
+                              placeholder: "Wpisz swoją odpowiedź...",
+                              data: { 
+                                max_score: question.max_score,
+                                question_id: question.id 
+                              } %>
+                        
+                        <div class="form-text text-muted d-flex justify-content-between">
+                          <span>
+                            <%= icon('info-circle', size: 'sm', css_class: 'me-1') %>
+                            Odpowiedź będzie oceniona przez nauczyciela
+                          </span>
+                          <span class="text-info" id="char-count-<%= question.id %>">
+                            0 znaków
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  <% end %>
                 <% end %>
               </div>
             <% end %>

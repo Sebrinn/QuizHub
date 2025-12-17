@@ -1,4 +1,3 @@
-# app/controllers/ai_questions_controller.rb
 class AiQuestionsController < ApplicationController
   before_action :set_classroom
   before_action :set_quiz
@@ -16,14 +15,16 @@ class AiQuestionsController < ApplicationController
 
     prompt = params[:prompt].to_s.strip
     count  = params[:count].to_i
+    question_type = params[:question_type] || "mixed" # 'mixed', 'multiple_choice', 'open_ended'
     count = 1 if count <= 0
 
-    puts "DEBUG: Starting generation - key: #{@generation_key}, count: #{count}"
+    puts "DEBUG: Starting generation - key: #{@generation_key}, count: #{count}, type: #{question_type}"
 
     save_progress_to_cache({
       total: count,
       current: 0,
-      status: "in_progress"
+      status: "in_progress",
+      question_type: question_type
     })
 
     generator = OpenrouterAiGenerator.new
@@ -33,25 +34,34 @@ class AiQuestionsController < ApplicationController
       save_progress_to_cache({
         total: count,
         current: i,
-        status: "in_progress"
+        status: "in_progress",
+        question_type: question_type
       })
 
-      puts "DEBUG: Generating question #{i + 1}/#{count}"
+      puts "DEBUG: Generating question #{i + 1}/#{count} of type: #{question_type}"
 
-      question = generator.generate_single_question(prompt, i + 1)
+      # Określ typ pytania na podstawie wyboru użytkownika
+      current_type = case question_type
+      when "mixed"
+                      i.even? ? "multiple_choice" : "open_ended"
+      else
+                      question_type
+      end
+
+      question = generator.generate_single_question(prompt, i + 1, current_type)
       generated_questions << question if question
 
       save_progress_to_cache({
         total: count,
         current: i + 1,
-        status: i + 1 == count ? "completed" : "in_progress"
+        status: i + 1 == count ? "completed" : "in_progress",
+        question_type: question_type
       })
 
       sleep(1) if count > 1 && i < count - 1
     end
 
     save_questions_to_cache(generated_questions)
-
     clear_progress_from_cache
 
     puts "DEBUG: Generation completed, saved #{generated_questions.size} questions to cache"
@@ -172,16 +182,27 @@ class AiQuestionsController < ApplicationController
 
     question = question_data.deep_symbolize_keys
 
-    if question[:answers_attributes].nil? || !question[:answers_attributes].is_a?(Array)
-      question[:answers_attributes] = []
-    else
-      question[:answers_attributes] = question[:answers_attributes].map do |answer|
-        answer.is_a?(Hash) ? answer.deep_symbolize_keys : answer
+    # Dla pytań wielokrotnego wyboru - upewnij się, że są odpowiedzi
+    if question[:question_type] == "multiple_choice"
+      if question[:answers_attributes].nil? || !question[:answers_attributes].is_a?(Array)
+        question[:answers_attributes] = []
+      else
+        question[:answers_attributes] = question[:answers_attributes].map do |answer|
+          answer.is_a?(Hash) ? answer.deep_symbolize_keys : answer
+        end
       end
+    else
+      # Dla pytań otwartych - ustaw pustą tablicę odpowiedzi
+      question[:answers_attributes] = []
     end
 
     question[:content] ||= "Brak treści pytania"
     question[:question_type] ||= "multiple_choice"
+
+    # Dodaj max_score dla pytań otwartych
+    if question[:question_type] == "open_ended"
+      question[:max_score] ||= 5 # Domyślnie 5 punktów za pytanie otwarte
+    end
 
     question
   end

@@ -65,6 +65,7 @@ class QuestionsController < ApplicationController
     params.require(:question).permit(
       :content,
       :question_type,
+      :max_score,
       answers_attributes: [ :id, :content, :correct, :_destroy ]
     )
   end

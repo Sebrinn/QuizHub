@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_05_160438) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_17_131136) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,12 +57,28 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_160438) do
     t.index ["token"], name: "index_invitations_on_token", unique: true
   end
 
+  create_table "open_answers", force: :cascade do |t|
+    t.bigint "question_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "quiz_result_id", null: false
+    t.text "content"
+    t.integer "score"
+    t.integer "status", default: 0
+    t.text "teacher_feedback"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["question_id"], name: "index_open_answers_on_question_id"
+    t.index ["quiz_result_id"], name: "index_open_answers_on_quiz_result_id"
+    t.index ["user_id"], name: "index_open_answers_on_user_id"
+  end
+
   create_table "questions", force: :cascade do |t|
     t.text "content"
     t.string "question_type"
     t.bigint "quiz_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "max_score"
     t.index ["quiz_id"], name: "index_questions_on_quiz_id"
   end
 
@@ -128,6 +144,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_160438) do
   add_foreign_key "classroom_memberships", "users"
   add_foreign_key "classrooms", "users", column: "teacher_id"
   add_foreign_key "invitations", "users", column: "invited_by_id"
+  add_foreign_key "open_answers", "questions"
+  add_foreign_key "open_answers", "quiz_results"
+  add_foreign_key "open_answers", "users"
   add_foreign_key "questions", "quizzes"
   add_foreign_key "quiz_results", "quizzes"
   add_foreign_key "quiz_results", "users"

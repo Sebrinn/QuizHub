@@ -69,6 +69,24 @@
               <% end %>
             </div>
 
+            <% if @question.open_ended? %>
+              <div class="mb-4">
+                <%= form.label :max_score, class: "form-label fw-medium text-gray-700" do %>
+                  <%= icon_with_text('star', 'Maksymalna punktacja', size: 'sm') %>
+                <% end %>
+                <%= form.number_field :max_score, 
+                      class: "form-control form-control-lg", 
+                      min: 1, 
+                      max: 100,
+                      value: @question.max_score || 5,
+                      required: true %>
+                <div class="form-text text-muted">
+                  Maksymalna liczba punktów za to pytanie otwarte. 
+                  Nauczyciel będzie mógł przyznać od 0 do tej wartości.
+                </div>
+              </div>
+            <% end %>
+
             <!-- Sekcja odpowiedzi - tylko dla multiple choice -->
             <% if @question.multiple_choice? %>
               <div class="border-top pt-4 mt-4">

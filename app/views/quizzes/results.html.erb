@@ -34,6 +34,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div class="d-flex align-items-center gap-3">
                     <strong class="fs-5"><%= user_result.score %> / <%= user_result.total %> punktów</strong>
+                    <% if user_result.open_answers.ungraded.any? %>
+                      <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                        <%= icon('clock', size: 'xs', css_class: 'me-1') %>
+                        <%= user_result.open_answers.ungraded.count %> do oceny
+                      </span>
+                    <% end %>
                     <span class="badge bg-<%= result_percentage_color(user_result.score, user_result.total) %>-subtle text-<%= result_percentage_color(user_result.score, user_result.total) %> border border-<%= result_percentage_color(user_result.score, user_result.total) %>-subtle fs-6">
                       <%= number_to_percentage((user_result.score.to_f / user_result.total) * 100, precision: 1) %>
                     </span>
@@ -46,6 +52,38 @@
                     <%= user_result.created_at.strftime("%d.%m.%Y %H:%M") %>
                   </small>
                 </div>
+
+                <% if current_user.student? && user_result.open_answers.any? %>
+                  <div class="mt-3 pt-3 border-top">
+                    <h6 class="mb-2">Twoje odpowiedzi otwarte:</h6>
+                    <% user_result.open_answers.each do |open_answer| %>
+                      <div class="card mb-2">
+                        <div class="card-body">
+                          <p class="mb-1">
+                            <strong>Pytanie:</strong> <%= open_answer.question.content %>
+                          </p>
+                          <p class="mb-1">
+                            <strong>Twoja odpowiedź:</strong> <%= open_answer.content %>
+                          </p>
+                          <% if open_answer.graded? %>
+                            <div class="alert alert-success py-2 mb-0">
+                              <strong>Wynik:</strong> <%= open_answer.score %>/<%= open_answer.max_score %> pkt
+                              <% if open_answer.teacher_feedback.present? %>
+                                <br>
+                                <strong>Komentarz nauczyciela:</strong> <%= open_answer.teacher_feedback %>
+                              <% end %>
+                            </div>
+                          <% else %>
+                            <div class="alert alert-warning py-2 mb-0">
+                              <%= icon('clock', size: 'sm', css_class: 'me-1') %>
+                              Oczekuje na ocenę przez nauczyciela
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
             </div>
           <% end %>
@@ -237,6 +275,148 @@
               <h5 class="text-gray-500">Brak wyników</h5>
               <p class="text-muted">Nikt jeszcze nie rozwiązał tego quizu.</p>
             </div>
+          <% end %>
+
+          <!-- Sekcja oceniania pytań otwartych - DODAJ TO -->
+          <% if current_user.teacher? || current_user.admin? %>
+            <% ungraded_answers = OpenAnswer.joins(:quiz_result, :question)
+                                            .where(quiz_results: { quiz_id: @quiz.id })
+                                            .ungraded %>
+            
+            <% if ungraded_answers.any? %>
+              <div class="border-top pt-4 mt-4">
+                <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                  <%= icon('pencil', size: 'sm', css_class: 'me-2 text-warning') %>
+                  Odpowiedzi otwarte do oceny (<%= ungraded_answers.count %>)
+                </h5>
+                
+                <div class="accordion" id="openAnswersAccordion">
+                  <% ungraded_answers.each_with_index do |open_answer, index| %>
+                    <div class="accordion-item">
+                      <h2 class="accordion-header">
+                        <button class="accordion-button <%= index > 0 ? 'collapsed' : '' %>" 
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#collapse<%= open_answer.id %>"
+                                aria-expanded="<%= index == 0 ? 'true' : 'false' %>"
+                                aria-controls="collapse<%= open_answer.id %>">
+                          <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                              <%= icon('user-circle', size: 'sm', css_class: 'me-2 text-gray-400') %>
+                              <span class="me-3"><%= open_answer.user.full_name %></span>
+                              <span class="badge bg-warning-subtle text-warning small">
+                                Pytanie <%= open_answer.question.content.truncate(30) %>
+                              </span>
+                            </div>
+                            <small class="text-muted">
+                              <%= time_ago_in_words(open_answer.created_at) %> temu
+                            </small>
+                          </div>
+                        </button>
+                      </h2>
+                      <div id="collapse<%= open_answer.id %>" 
+                          class="accordion-collapse collapse <%= index == 0 ? 'show' : '' %>" 
+                          data-bs-parent="#openAnswersAccordion">
+                        <div class="accordion-body">
+                          <!-- Treść pytania -->
+                          <div class="mb-3">
+                            <strong class="text-gray-600">Pytanie:</strong>
+                            <p class="mb-0"><%= open_answer.question.content %></p>
+                          </div>
+                          
+                          <!-- Odpowiedź ucznia -->
+                          <div class="mb-3">
+                            <strong class="text-gray-600">Odpowiedź ucznia:</strong>
+                            <div class="card bg-light border-0 mt-2">
+                              <div class="card-body">
+                                <p class="mb-0"><%= simple_format(open_answer.content) %></p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- Formularz oceny -->
+                          <%= form_with url: grade_open_answer_path(open_answer), 
+                                        method: :patch,
+                                        class: "grade-open-answer-form" do |form| %>
+                            <div class="row g-3">
+                              <div class="col-md-3">
+                                <label class="form-label">Wynik (0-<%= open_answer.max_score %> pkt)</label>
+                                <%= form.number_field "open_answer[score]", 
+                                      class: "form-control",
+                                      min: 0,
+                                      max: open_answer.max_score,
+                                      value: open_answer.score || 0,
+                                      required: true %>
+                              </div>
+                              <div class="col-md-6">
+                                <label class="form-label">Komentarz (opcjonalnie)</label>
+                                <%= form.text_area "open_answer[feedback]", 
+                                      class: "form-control",
+                                      rows: 2,
+                                      placeholder: "Dodaj konstruktywną informację zwrotną...",
+                                      value: open_answer.teacher_feedback %>
+                              </div>
+                              <div class="col-md-3 d-flex align-items-end">
+                                <%= form.submit "Zapisz ocenę", 
+                                      class: "btn btn-primary w-100 d-flex align-items-center justify-content-center" do %>
+                                  <%= icon('check', size: 'sm', css_class: 'me-2') %>
+                                  Oceń
+                                <% end %>
+                              </div>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+            
+            <!-- Już ocenione odpowiedzi (do podglądu) -->
+            <% graded_answers = OpenAnswer.joins(:quiz_result, :question)
+                                          .where(quiz_results: { quiz_id: @quiz.id })
+                                          .graded
+                                          .order(updated_at: :desc)
+                                          .limit(10) %>
+            
+            <% if graded_answers.any? %>
+              <div class="border-top pt-4 mt-4">
+                <h5 class="text-gray-700 mb-3 d-flex align-items-center">
+                  <%= icon('check-circle', size: 'sm', css_class: 'me-2 text-success') %>
+                  Ostatnio ocenione odpowiedzi
+                </h5>
+                
+                <div class="row g-3">
+                  <% graded_answers.each do |open_answer| %>
+                    <div class="col-md-6">
+                      <div class="card border">
+                        <div class="card-body">
+                          <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong><%= open_answer.user.full_name %></strong>
+                            <span class="badge bg-success-subtle text-success">
+                              <%= open_answer.score %>/<%= open_answer.max_score %> pkt
+                            </span>
+                          </div>
+                          <p class="small text-muted mb-2">
+                            <strong>Pytanie:</strong> <%= open_answer.question.content.truncate(50) %>
+                          </p>
+                          <p class="small mb-2">
+                            <strong>Odpowiedź:</strong> <%= open_answer.content.truncate(70) %>
+                          </p>
+                          <% if open_answer.teacher_feedback.present? %>
+                            <div class="border-top pt-2 mt-2">
+                              <small class="text-gray-600">Komentarz nauczyciela:</small>
+                              <p class="small mb-0"><%= open_answer.teacher_feedback.truncate(50) %></p>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
           <% end %>
 
           <!-- Akcje dodatkowe -->
