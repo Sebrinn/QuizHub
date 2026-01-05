@@ -35,7 +35,7 @@ class OpenrouterAiGenerator
     system_prompt = build_system_prompt(topic, question_type)
 
     body = {
-      model: "kwaipilot/kat-coder-pro:free",
+      model: ENV.fetch("AI_MODEL_NAME", "kwaipilot/kat-coder-pro:free"),
       messages: [
         {
           role: "system",

@@ -21,12 +21,14 @@ class QuizResult < ApplicationRecord
   end
 
   def calculate_final_score
-    auto_score = self.score # Wynik z pytań zamkniętych
-    manual_score = open_answers.graded.sum(:score).to_i # Punkty za pytania otwarte
+    closed_score = self.original_score || self.score
 
-    # Aktualizuj tylko jeśli mamy nowe punkty z pytań otwartych
-    if manual_score > 0 && auto_score + manual_score != self.score
-      update_column(:score, auto_score + manual_score)
+    open_score = open_answers.graded.sum(:score).to_i
+
+    new_total_score = closed_score + open_score
+
+    if new_total_score != self.score
+      update_column(:score, new_total_score)
     end
   end
 

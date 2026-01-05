@@ -12,12 +12,17 @@ class Question < ApplicationRecord
   validate :at_least_two_answers, if: :multiple_choice?
 
   validates :max_score, numericality: { greater_than: 0 }, if: :open_ended?
+  before_validation :set_default_max_score, if: :open_ended?
 
   accepts_nested_attributes_for :answers,
                                allow_destroy: true,
                                reject_if: proc { |attrs| attrs["content"].blank? }
 
   scope :open_ended, -> { where(question_type: "open_ended") }
+
+  def set_default_max_score
+    self.max_score = 5 if open_ended? && max_score.blank?
+  end
 
   def multiple_choice?
     question_type == "multiple_choice"
@@ -27,9 +32,13 @@ class Question < ApplicationRecord
     question_type == "open_ended"
   end
 
-  def max_score
-    self[:max_score] || (open_ended? ? 5 : 1)
+def max_score
+  if open_ended?
+    self[:max_score] || 5
+  else
+    1
   end
+end
 
   private
 

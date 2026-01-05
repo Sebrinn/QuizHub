@@ -4,8 +4,8 @@ Rails.application.routes.draw do
     resources :invitations, only: [ :index, :new, :create, :destroy ]
     resources :users, only: [ :index ] do
       member do
-        post :promote_to_teacher
-        post :demote_to_student
+        patch :promote_to_teacher
+        patch :demote_to_student
       end
     end
   end

@@ -45,6 +45,10 @@ class Quiz < ApplicationRecord
     [ 0, (end_time - Time.current).to_i ].max
   end
 
+  def total_max_score
+    questions.sum { |question| question.max_score }
+  end
+
   private
 
   def end_time_after_start_time

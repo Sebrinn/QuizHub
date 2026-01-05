@@ -277,10 +277,12 @@
             </div>
           <% end %>
 
-          <!-- Sekcja oceniania pytań otwartych - DODAJ TO -->
           <% if current_user.teacher? || current_user.admin? %>
             <% ungraded_answers = OpenAnswer.joins(:quiz_result, :question)
-                                            .where(quiz_results: { quiz_id: @quiz.id })
+                                            .where(quiz_results: { 
+                                            quiz_id: @quiz.id,
+                                            status: :active
+                                            })
                                             .ungraded %>
             
             <% if ungraded_answers.any? %>
@@ -375,7 +377,10 @@
             
             <!-- Już ocenione odpowiedzi (do podglądu) -->
             <% graded_answers = OpenAnswer.joins(:quiz_result, :question)
-                                          .where(quiz_results: { quiz_id: @quiz.id })
+                                          .where(quiz_results: { 
+                                            quiz_id: @quiz.id,
+                                            status: :active
+                                            })
                                           .graded
                                           .order(updated_at: :desc)
                                           .limit(10) %>

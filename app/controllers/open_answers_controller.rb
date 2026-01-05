@@ -6,6 +6,14 @@ class OpenAnswersController < ApplicationController
   def grade
     authorize @open_answer
 
+    unless @open_answer.quiz_result.active?
+      redirect_back fallback_location: results_classroom_quiz_path(
+        @open_answer.question.quiz.classroom,
+        @open_answer.question.quiz
+      ), alert: "Nie można ocenić odpowiedzi z dezaktywowanego lub zakończonego quizu."
+      return
+    end
+
     score = params[:open_answer][:score].to_i
     feedback = params[:open_answer][:feedback]
 

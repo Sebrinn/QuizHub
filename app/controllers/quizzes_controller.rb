@@ -98,7 +98,7 @@ class QuizzesController < ApplicationController
     @quiz_result = @quiz.quiz_results.create!(
       user: current_user,
       score: 0,
-      total: @quiz.questions.count,
+      total: @quiz.total_max_score,
       status: :active
     )
 
@@ -148,7 +148,10 @@ class QuizzesController < ApplicationController
 
     save_open_answers(params[:answers] || {}, @quiz_result)
 
-    @quiz_result.update!(score: auto_score)
+      @quiz_result.update!(
+        score: auto_score,
+        original_score: auto_score
+      )
 
     redirect_to results_classroom_quiz_path(@classroom, @quiz),
                 notice: "Quiz został zakończony."
@@ -176,19 +179,19 @@ class QuizzesController < ApplicationController
     @classroom = Classroom.find(params[:classroom_id])
   end
 
-def set_quiz
-  puts "=== DEBUG SET_QUIZ ==="
-  puts "params[:id]: #{params[:id]}"
-  puts "params[:classroom_id]: #{params[:classroom_id]}"
-  puts "@classroom: #{@classroom.inspect}"
+  def set_quiz
+    puts "=== DEBUG SET_QUIZ ==="
+    puts "params[:id]: #{params[:id]}"
+    puts "params[:classroom_id]: #{params[:classroom_id]}"
+    puts "@classroom: #{@classroom.inspect}"
 
-  @quiz = @classroom.quizzes.find(params[:id])
-  puts "@quiz: #{@quiz.inspect}"
-  puts "=== END DEBUG SET_QUIZ ==="
-rescue ActiveRecord::RecordNotFound => e
-  puts "ERROR in set_quiz: #{e.message}"
-  @quiz = nil
-end
+    @quiz = @classroom.quizzes.find(params[:id])
+    puts "@quiz: #{@quiz.inspect}"
+    puts "=== END DEBUG SET_QUIZ ==="
+  rescue ActiveRecord::RecordNotFound => e
+    puts "ERROR in set_quiz: #{e.message}"
+    @quiz = nil
+  end
 
   def quiz_params
     params.require(:quiz).permit(:title, :description, :start_time, :end_time, :time_limit, :shuffle_questions, :active)

@@ -1,0 +1,48 @@
+pl:
+  datetime:
+    distance_in_words:
+      less_than_x_minutes:
+        one:   "mniej niż minuta"
+        few:   "mniej niż %{count} minuty"
+        many:  "mniej niż %{count} minut"
+        other: "mniej niż %{count} minut"
+      x_minutes:
+        one:   "1 minuta"
+        few:   "%{count} minuty"
+        many:  "%{count} minut"
+        other: "%{count} minut"
+      about_x_hours:
+        one:   "około 1 godzina"
+        few:   "około %{count} godziny"
+        many:  "około %{count} godzin"
+        other: "około %{count} godzin"
+      x_days:
+        one:   "1 dzień"
+        few:   "%{count} dni"
+        many:  "%{count} dni"
+        other: "%{count} dni"
+      about_x_months:
+        one:   "około 1 miesiąc"
+        few:   "około %{count} miesiące"
+        many:  "około %{count} miesięcy"
+        other: "około %{count} miesięcy"
+      x_months:
+        one:   "1 miesiąc"
+        few:   "%{count} miesiące"
+        many:  "%{count} miesięcy"
+        other: "%{count} miesięcy"
+      about_x_years:
+        one:   "około 1 rok"
+        few:   "około %{count} lata"
+        many:  "około %{count} lat"
+        other: "około %{count} lat"
+      over_x_years:
+        one:   "ponad 1 rok"
+        few:   "ponad %{count} lata"
+        many:  "ponad %{count} lat"
+        other: "ponad %{count} lat"
+      almost_x_years:
+        one:   "prawie 1 rok"
+        few:   "prawie %{count} lata"
+        many:  "prawie %{count} lat"
+        other: "prawie %{count} lat"

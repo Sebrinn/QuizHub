@@ -200,7 +200,8 @@
             <% end %>
 
             <% if current_user.student? && policy(@quiz).start? %>
-              <%= link_to start_classroom_quiz_path(@classroom, @quiz), 
+              <%= link_to start_classroom_quiz_path(@classroom, @quiz),
+                    method: :post,
                     class: "btn btn-success d-flex align-items-center" do %>
                 <%= icon('play', size: 'sm', css_class: 'me-2') %>
                 Rozpocznij quiz
