@@ -1,4 +1,3 @@
-# app/controllers/quizzes_controller.rb
 class QuizzesController < ApplicationController
   before_action :set_classroom
   before_action :set_quiz, only: [ :start, :submit, :solve, :results, :show, :edit, :update, :destroy, :activate, :deactivate ]
@@ -63,13 +62,11 @@ class QuizzesController < ApplicationController
 
     @quiz_results = @quiz.quiz_results.includes(:user).order(created_at: :desc)
 
-    # Dla studentów - pokazuj tylko ich wynik lub jeśli quiz się zakończył
     if current_user.student? && @quiz.status != :finished
       @quiz_results = @quiz_results.where(user: current_user)
     end
 
     if @quiz_results.active.any?
-      # Oblicz statystyki tylko jeśli są wyniki
       scores = @quiz_results.active.map { |r| (r.score.to_f / r.total) * 100 }
       @average_score = (scores.sum / scores.size).round(2)
       @best_score = scores.max.round(2)
@@ -80,7 +77,6 @@ class QuizzesController < ApplicationController
   def start
     authorize @quiz
 
-    # Sprawdź czy uczeń ma aktywne podejście
     active_attempt = @quiz.quiz_results.active.find_by(user: current_user)
     if active_attempt
       redirect_to solve_classroom_quiz_path(@classroom, @quiz),
@@ -88,13 +84,11 @@ class QuizzesController < ApplicationController
       return
     end
 
-    # Sprawdź czy uczeń może rozpocząć quiz
     unless @quiz.can_be_started?(current_user)
       redirect_to classroom_path(@classroom), alert: "Nie możesz rozpocząć tego quizu."
       return
     end
 
-    # Utwórz nowe podejście
     @quiz_result = @quiz.quiz_results.create!(
       user: current_user,
       score: 0,
@@ -120,7 +114,6 @@ class QuizzesController < ApplicationController
       return
     end
 
-    # Sprawdź czy czas nie upłynął
     if @quiz.time_limit && @quiz.time_limit > 0
       end_time = @quiz_result.created_at + @quiz.time_limit.minutes
       if Time.current > end_time
@@ -130,7 +123,6 @@ class QuizzesController < ApplicationController
       end
     end
 
-    # Przygotuj pytania (losowa kolejność jeśli ustawione)
     @questions = @quiz.shuffle_questions ? @quiz.questions.shuffle : @quiz.questions
   end
 
@@ -202,12 +194,9 @@ class QuizzesController < ApplicationController
 
     @quiz.questions.each do |question|
       if question.multiple_choice?
-        # Dla pytań wielokrotnego wyboru
         user_answer_ids = Array(answers_params[question.id.to_s]).map(&:to_i)
         correct_answer_ids = question.answers.where(correct: true).pluck(:id)
 
-        # Punktacja: 1 punkt tylko jeśli wszystkie poprawne odpowiedzi zaznaczone
-        # i żadnych błędnych (all-or-nothing)
         if user_answer_ids.sort == correct_answer_ids.sort
           score += 1
         end

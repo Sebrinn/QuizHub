@@ -1,7 +1,6 @@
 <%= render 'shared/icons' %>
 
 <div class="container-fluid py-4">
-  <!-- Nagłówek klasy -->
   <div class="d-flex justify-content-between align-items-start mb-4">
     <div class="flex-grow-1">
       <div class="d-flex align-items-center mb-2">
@@ -29,9 +28,7 @@
   </div>
 
   <div class="row">
-    <!-- Główna zawartość -->
     <div class="col-lg-8">
-      <!-- Sekcja quizów -->
       <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white py-3">
           <div class="d-flex justify-content-between align-items-center">
@@ -66,7 +63,6 @@
                         <p class="card-text text-muted small flex-grow-1 mb-3"><%= quiz.description %></p>
                       <% end %>
 
-                      <!-- Informacje o czasie -->
                       <% if quiz.start_time %>
                         <div class="mb-3">
                           <small class="text-gray-600 d-block">
@@ -80,7 +76,6 @@
                         </div>
                       <% end %>
 
-                      <!-- Akcje -->
                       <div class="mt-auto">
                         <div class="d-flex gap-2 flex-wrap">
                           <% if current_user.student? %>
@@ -111,7 +106,6 @@
                               </span>
                             <% end %>
                           <% else %>
-                            <!-- Akcje dla nauczyciela -->
                             <%= link_to classroom_quiz_path(@classroom, quiz), 
                                   class: "btn btn-outline-primary btn-sm d-flex align-items-center" do %>
                               <%= icon('eye', size: 'xs', css_class: 'me-1') %>
@@ -134,7 +128,6 @@
                               <% end %>
                             <% end %>
 
-                            <!-- Aktywacja/deaktywacja -->
                             <% if policy(quiz).activate? || policy(quiz).deactivate? %>
                               <% if quiz.active? %>
                                 <%= button_to deactivate_classroom_quiz_path(@classroom, quiz), 
@@ -187,9 +180,7 @@
       </div>
     </div>
 
-    <!-- Panel boczny -->
     <div class="col-lg-4">
-      <!-- Sekcja uczniów -->
       <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white py-3">
           <h5 class="card-title mb-0 d-flex align-items-center">
@@ -229,7 +220,6 @@
         </div>
       </div>
 
-      <!-- Kod zaproszenia -->
       <% if current_user.teacher? %>
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white py-3">

@@ -1,4 +1,3 @@
-# app/services/openrouter_ai_generator.rb
 class OpenrouterAiGenerator
   API_URL = "https://openrouter.ai/api/v1/chat/completions".freeze
 
@@ -111,7 +110,6 @@ class OpenrouterAiGenerator
       PROMPT
 
     else
-      # Mixed - losowo wybierz typ
       rand(2) == 0 ? build_system_prompt(topic, "multiple_choice") : build_system_prompt(topic, "open_ended")
     end
   end
@@ -154,7 +152,6 @@ class OpenrouterAiGenerator
 
       question_data = JSON.parse(clean_content)
 
-      # Sprawdź czy zwrócony typ zgadza się z oczekiwanym
       if question_data["question_type"] != expected_type
         puts "WARNING: Expected #{expected_type} but got #{question_data['question_type']}"
         question_data["question_type"] = expected_type
@@ -195,7 +192,6 @@ class OpenrouterAiGenerator
     when "open_ended"
       return false unless data["question_type"] == "open_ended"
       return false unless data["max_score"].is_a?(Integer) && data["max_score"] > 0
-      # Dla pytań otwartych nie wymagamy answers_attributes
       true
 
     else
@@ -232,7 +228,6 @@ class OpenrouterAiGenerator
   def structured_fallback(content, topic, expected_type)
     case expected_type
     when "multiple_choice"
-      # Istniejąca logika dla pytań wielokrotnego wyboru
       content_match = content.match(/"content":\s*"([^"]+)"/)
       question_line = content_match ? content_match[1] : "Pytanie o: #{topic}?"
 
@@ -267,7 +262,6 @@ class OpenrouterAiGenerator
       }
 
     when "open_ended"
-      # Nowa logika dla pytań otwartych
       content_match = content.match(/"content":\s*"([^"]+)"/)
       question_line = content_match ? content_match[1] : "Wyjaśnij: #{topic}?"
 

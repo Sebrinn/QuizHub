@@ -1,6 +1,6 @@
 class ClassroomsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_classroom, only: %i[show destroy remove_student] # dodaj remove_student
+  before_action :set_classroom, only: %i[show destroy remove_student]
   after_action :verify_authorized, except: :index
   after_action :verify_policy_scoped, only: :index
 
@@ -10,7 +10,6 @@ class ClassroomsController < ApplicationController
 
   def show
     authorize @classroom
-    # Używamy policy_scope do pobrania quizów z autoryzacją
     @quizzes = policy_scope(Quiz).where(classroom: @classroom).order(created_at: :desc)
   end
 

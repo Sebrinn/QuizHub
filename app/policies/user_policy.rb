@@ -1,4 +1,3 @@
-# app/policies/user_policy.rb
 class UserPolicy
   attr_reader :user, :record
 
@@ -32,8 +31,6 @@ class UserPolicy
     def resolve
       if @user.admin?
         @scope.all
-      # elsif @user.teacher?
-      #   @scope.where(role: [ :student, :teacher ])
       else
         @scope.where(id: @user.id)
       end

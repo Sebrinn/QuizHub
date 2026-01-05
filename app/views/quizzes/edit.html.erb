@@ -34,7 +34,6 @@
               </div>
             <% end %>
 
-            <!-- Podstawowe informacje -->
             <div class="mb-4">
               <%= form.label :title, class: "form-label fw-medium text-gray-700" do %>
                 <%= icon_with_text('tag', 'Tytuł quizu', size: 'sm') %>
@@ -61,8 +60,7 @@
                 Opcjonalny opis pomagający uczniom zrozumieć zakres quizu
               </div>
             </div>
-
-            <!-- Ustawienia czasu -->
+            
             <div class="border-top pt-4 mt-4">
               <h5 class="text-gray-700 mb-3 d-flex align-items-center">
                 <%= icon('clock', size: 'sm', css_class: 'me-2 text-warning') %>
@@ -91,7 +89,6 @@
               </div>
             </div>
 
-            <!-- Limity czasu -->
             <div class="border-top pt-4 mt-4">
               <h5 class="text-gray-700 mb-3 d-flex align-items-center">
                 <%= icon('hourglass', size: 'sm', css_class: 'me-2 text-info') %>
@@ -114,7 +111,6 @@
               </div>
             </div>
 
-            <!-- Dodatkowe opcje -->
             <div class="border-top pt-4 mt-4">
               <h5 class="text-gray-700 mb-3 d-flex align-items-center">
                 <%= icon('cog', size: 'sm', css_class: 'me-2 text-secondary') %>
@@ -148,7 +144,6 @@
               </div>
             </div>
 
-            <!-- Przyciski -->
             <div class="d-flex gap-3 mt-4 pt-4 border-top">
               <%= form.submit "Zapisz zmiany", 
                   class: "btn btn-primary btn-lg flex-fill d-flex align-items-center justify-content-center",
@@ -170,7 +165,6 @@
         </div>
       </div>
 
-      <!-- Statystyki quizu -->
       <div class="card shadow-sm border-0 mt-4">
         <div class="card-header bg-white py-3">
           <h6 class="mb-0 d-flex align-items-center">
@@ -211,7 +205,6 @@
         </div>
       </div>
 
-      <!-- Szybkie akcje -->
       <div class="card shadow-sm border-0 mt-4">
         <div class="card-header bg-white py-3">
           <h6 class="mb-0 d-flex align-items-center">
@@ -264,7 +257,6 @@
         </div>
       </div>
 
-      <!-- Informacje o quizie -->
       <div class="card shadow-sm border-0 mt-4">
         <div class="card-header bg-white py-3">
           <h6 class="mb-0 d-flex align-items-center">

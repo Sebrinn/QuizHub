@@ -27,7 +27,6 @@ class Quiz < ApplicationRecord
     return false if quiz_results.active.exists?(user: user)
     return false if quiz_results.inactive.exists?(user: user)
 
-    # Reszta istniejącej logiki
     if start_time && end_time
       Time.current.between?(start_time, end_time)
     else

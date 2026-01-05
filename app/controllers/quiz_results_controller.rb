@@ -1,11 +1,9 @@
-# app/controllers/quiz_results_controller.rb
 class QuizResultsController < ApplicationController
   before_action :set_quiz_result
   after_action :verify_authorized
 
   def show
     authorize @quiz_result
-    # Szczegóły rozwiązania - odpowiedzi użytkownika itp.
   end
 
   def deactivate
@@ -18,10 +16,8 @@ class QuizResultsController < ApplicationController
   def allow_retake
     authorize @quiz_result
 
-    # Deaktywujemy stare rozwiązanie
     @quiz_result.mark_as_retaken!
 
-    # Usuwamy bieżący quiz_result dla tego użytkownika (jeśli istnieje)
     current_quiz_result = @quiz_result.quiz.quiz_results.active.find_by(user: @quiz_result.user)
     current_quiz_result&.destroy
 

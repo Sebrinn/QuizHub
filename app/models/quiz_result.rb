@@ -4,9 +4,9 @@ class QuizResult < ApplicationRecord
   has_many :open_answers, dependent: :destroy
 
   enum :status, {
-    active: 0,      # Aktywne podejście
-    inactive: 1,    # Dezaktywowane (nauczyciel)
-    retaken: 2      # Zastąpione nowym podejściem
+    active: 0,
+    inactive: 1,
+    retaken: 2
   }
 
   scope :active, -> { where(status: :active) }

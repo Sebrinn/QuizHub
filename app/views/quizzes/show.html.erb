@@ -26,7 +26,6 @@
             <p class="text-gray-600 mb-4"><%= @quiz.description %></p>
           <% end %>
 
-          <!-- Informacje o quizie -->
           <div class="row g-4 mb-4">
             <% if @quiz.start_time %>
               <div class="col-md-6">
@@ -72,7 +71,6 @@
             </div>
           </div>
 
-          <!-- Sekcja pytań -->
           <div class="border-top pt-4">
             <h5 class="text-gray-700 mb-3 d-flex align-items-center">
               <%= icon('question-mark-circle', size: 'sm', css_class: 'me-2 text-primary') %>
@@ -132,7 +130,6 @@
                           <% end %>
                         </div>
                         
-                        <!-- Podgląd poprawnych odpowiedzi (tylko dla nauczyciela) -->
                         <% if current_user.teacher? && correct_answers.any? %>
                           <div class="mt-3 pt-3 border-top">
                             <small class="text-gray-600 d-block mb-2">
@@ -226,9 +223,7 @@
       </div>
     </div>
 
-    <!-- Panel boczny -->
     <div class="col-lg-4">
-      <!-- Statystyki -->
       <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white py-3">
           <h5 class="mb-0 d-flex align-items-center">
@@ -267,7 +262,6 @@
         </div>
       </div>
 
-      <!-- Zarządzanie -->
       <% if policy(@quiz).activate? || policy(@quiz).deactivate? %>
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white py-3">
@@ -302,7 +296,6 @@
 </div>
 
 <script>
-// Prostsza wersja obsługi anchor - bez debugowania
 document.addEventListener('turbo:load', function() {
   handleAnchorNavigation();
 });

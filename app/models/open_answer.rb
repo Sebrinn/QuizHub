@@ -5,15 +5,14 @@ class OpenAnswer < ApplicationRecord
 
   validates :content, presence: true, if: :submitted?
 
-  # Punkty za odpowiedź (uzupełniane przez nauczyciela)
   validates :score, numericality: {
     greater_than_or_equal_to: 0,
     allow_nil: true
   }
 
   enum :status, {
-    pending: 0,      # Oczekuje na ocenę
-    graded: 1        # Ocenione
+    pending: 0,
+    graded: 1
   }
 
   scope :ungraded, -> { where(status: :pending) }

@@ -12,7 +12,6 @@ def show
   elsif @invitation.accepted?
     redirect_to new_user_session_path, alert: "Zaproszenie zostało już wykorzystane"
   else
-    # Przekieruj do rejestracji z tokenem
     redirect_to new_user_registration_path(invitation_token: @invitation.token)
   end
 end

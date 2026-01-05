@@ -1,4 +1,74 @@
 pl:
+  activerecord:
+    models:
+      user: "użytkownik"
+    attributes:
+      user:
+        email: "email"
+        password: "hasło"
+        password_confirmation: "potwierdzenie hasła"
+        remember_me: "zapamiętaj mnie"
+        current_password: "aktualne hasło"
+        first_name: "imię"
+        last_name: "nazwisko"
+        role: "rola"
+        full_name: "pełne imię"
+        confirmed_at: "potwierdzono"
+        confirmation_sent_at: "wysłano potwierdzenie"
+        confirmation_token: "token potwierdzenia"
+        unconfirmed_email: "niepotwierdzony email"
+        reset_password_token: "token resetowania hasła"
+        reset_password_sent_at: "wysłano reset hasła"
+        remember_created_at: "zapamiętano"
+        sign_in_count: "liczba logowań"
+        current_sign_in_at: "aktualne logowanie"
+        last_sign_in_at: "ostatnie logowanie"
+        current_sign_in_ip: "aktualny adres IP"
+        last_sign_in_ip: "ostatni adres IP"
+        created_at: "utworzono"
+        updated_at: "zaktualizowano"
+        
+  errors:
+    messages:
+      confirmation: "nie zgadza się"
+      taken: "jest już zajęte"
+      blank: "nie może być puste"
+      invalid: "jest nieprawidłowe"
+      too_short: "jest za krótkie (minimum %{count} znaków)"
+      too_long: "jest za długie (maksimum %{count} znaków)"
+      already_confirmed: "już potwierdzony, proszę spróbować zalogować się"
+      confirmation_period_expired: "musi zostać potwierdzony w ciągu %{period}, proszę poproś o nowy"
+      expired: "stracił ważność, proszę poproś o nowy"
+      not_found: "nie znaleziono"
+      not_locked: "nie został zablokowany"
+      not_saved:
+        one: "1 błąd uniemożliwił zapisanie %{resource}:"
+        other: "%{count} błędów uniemożliwiło zapisanie %{resource}:"
+
+  helpers:
+    select:
+      prompt: "Wybierz"
+    submit:
+      create: "Utwórz %{model}"
+      update: "Zaktualizuj %{model}"
+      submit: "Wyślij %{model}"
+    label:
+      user:
+        email: "Email"
+        password: "Hasło"
+        password_confirmation: "Potwierdzenie hasła"
+        first_name: "Imię"
+        last_name: "Nazwisko"
+        role: "Rola"
+        remember_me: "Zapamiętaj mnie"
+
+  # Tłumaczenia dla ról
+  user:
+    roles:
+      student: "uczeń"
+      teacher: "nauczyciel"
+      admin: "administrator"
+
   devise:
     confirmations:
       confirmed: "Twój adres email został pomyślnie potwierdzony."
@@ -74,16 +144,40 @@ pl:
         didn_t_receive_confirmation_instructions: "Nie otrzymałeś instrukcji potwierdzenia?"
         didn_t_receive_unlock_instructions: "Nie otrzymałeś instrukcji odblokowania?"
         send_me_reset_password_instructions: "Wyślij mi instrukcje resetowania hasła"
-  errors:
-    messages:
-      already_confirmed: "już potwierdzony, proszę spróbować zalogować się"
-      confirmation_period_expired: "musi zostać potwierdzony w ciągu %{period}, proszę poproś o nowy"
-      expired: "stracił ważność, proszę poproś o nowy"
-      not_found: "nie znaleziono"
-      not_locked: "nie został zablokowany"
-      not_saved:
-        one: "1 błąd uniemożliwił zapisanie %{resource}:"
-        other: "%{count} błędów uniemożliwiło zapisanie %{resource}:"
+
+  # Tłumaczenia dla akcji
+  helpers:
+    actions:
+      new: "Nowy"
+      edit: "Edytuj"
+      show: "Pokaż"
+      destroy: "Usuń"
+      back: "Wstecz"
+      save: "Zapisz"
+      cancel: "Anuluj"
+
+  # Tłumaczenia dla przycisków
+  buttons:
+    save: "Zapisz"
+    cancel: "Anuluj"
+    delete: "Usuń"
+    edit: "Edytuj"
+    new: "Nowy"
+    show: "Pokaż"
+    back: "Wstecz"
+    sign_in: "Zaloguj się"
+    sign_up: "Zarejestruj się"
+    sign_out: "Wyloguj się"
+
+  # Tłumaczenia dla stron
+  users:
+    new:
+      title: "Rejestracja nowego użytkownika"
+    edit:
+      title: "Edycja profilu"
+    show:
+      title: "Profil użytkownika"
+
   time:
     formats:
       short: "%d.%m.%Y %H:%M"

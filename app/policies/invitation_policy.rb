@@ -1,4 +1,3 @@
-# app/policies/invitation_policy.rb
 class InvitationPolicy
   attr_reader :user, :record
 

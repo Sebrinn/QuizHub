@@ -1,4 +1,3 @@
-# app/controllers/questions_controller.rb
 class QuestionsController < ApplicationController
   before_action :set_classroom
   before_action :set_quiz

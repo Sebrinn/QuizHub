@@ -1,4 +1,3 @@
-# app/controllers/users/registrations_controller.rb
 class Users::RegistrationsController < Devise::RegistrationsController
   def new
     @invitation_token = params[:invitation_token]

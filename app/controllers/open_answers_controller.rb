@@ -1,4 +1,3 @@
-# app/controllers/open_answers_controller.rb
 class OpenAnswersController < ApplicationController
   before_action :set_open_answer
   after_action :verify_authorized
@@ -24,7 +23,6 @@ class OpenAnswersController < ApplicationController
         status: :graded
       )
 
-      # Zaktualizuj wynik quizu
       @open_answer.quiz_result.calculate_final_score
 
       redirect_back fallback_location: results_classroom_quiz_path(

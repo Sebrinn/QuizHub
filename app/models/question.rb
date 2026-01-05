@@ -1,4 +1,3 @@
-# app/models/question.rb
 class Question < ApplicationRecord
   belongs_to :quiz
   has_many :answers, dependent: :destroy
@@ -7,7 +6,6 @@ class Question < ApplicationRecord
   validates :content, presence: true
   validates :question_type, presence: true, inclusion: { in: %w[multiple_choice open_ended] }
 
-  # Walidacja dla pytań wielokrotnego wyboru
   validate :at_least_one_correct_answer, if: :multiple_choice?
   validate :at_least_two_answers, if: :multiple_choice?
 

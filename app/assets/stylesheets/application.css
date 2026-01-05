@@ -61,7 +61,7 @@
   transition: fill 0.2s ease-in-out;
 }
 
-/* rozmiary ikon */
+
 .icon-sm {
   width: 0.875em;
   height: 0.875em;
@@ -77,14 +77,13 @@
   height: 1.75em;
 }
 
-/* wyrównanie ikony z tekstem */
+
 .icon-text {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
 }
 
-/* opcjonalnie: dopasowanie kolorów dla Bootstrap */
 .text-gray-800 .icon,
 .text-gray-700 .icon,
 .text-gray-600 .icon {
@@ -96,5 +95,5 @@
 }
 
 .btn:hover .icon {
-  fill: #fff; /* np. biały na hover */
+  fill: #fff;
 }

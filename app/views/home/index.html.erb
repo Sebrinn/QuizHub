@@ -2,10 +2,8 @@
 
 <div class="container-fluid min-vh-100 bg-gradient-primary">
   <div class="container">
-    <!-- Hero Section -->
     <div class="row align-items-center min-vh-100 py-5">
       <div class="col-lg-8 mx-auto text-center">
-        <!-- Logo i nagłówek -->
         <div class="mb-5">
           <div class="d-flex justify-content-center align-items-center mb-4">
             <div class="bg-white rounded-circle p-3 shadow-lg me-3">
@@ -18,7 +16,6 @@
           </p>
         </div>
 
-        <!-- Dla zalogowanych użytkowników -->
         <% if user_signed_in? %>
           <div class="card shadow-lg border-0 mb-5">
             <div class="card-body py-5">
@@ -35,11 +32,9 @@
                     </div>
                   </div>
 
-                  <!-- Szybkie akcje -->
                   <div class="row g-3 mb-4 justify-content-center">
                     <% if policy(:classroom).index? %>
                       <% if current_user.teacher? && policy(:classroom).new? %>
-                        <!-- Dwa przyciski obok siebie -->
                         <div class="col-md-6 col-lg-4">
                           <%= link_to classrooms_path, class: "btn btn-primary w-100 d-flex align-items-center justify-content-center" do %>
                             <%= icon('book-open', size: 'sm', css_class: 'me-2') %>
@@ -55,7 +50,6 @@
                         </div>
 
                       <% else %>
-                        <!-- Jeden przycisk wyśrodkowany -->
                         <div class="col-md-6 col-lg-4">
                           <%= link_to classrooms_path, class: "btn btn-primary w-100 d-flex align-items-center justify-content-center mx-auto" do %>
                             <%= icon('book-open', size: 'sm', css_class: 'me-2') %>
@@ -66,7 +60,6 @@
                     <% end %>
                   </div>
 
-                  <!-- Panel administracyjny dla nauczycieli/adminów -->
                   <% if current_user.teacher? || current_user.admin? %>
                     <div class="border-top pt-4 mt-4">
                       <h5 class="text-gray-700 mb-3 d-flex align-items-center justify-content-center">
@@ -104,14 +97,12 @@
             </div>
           </div>
         <% else %>
-          <!-- Dla niezalogowanych użytkowników -->
           <div class="row justify-content-center">
             <div class="col-lg-8">
               <div class="card shadow-lg border-0 mb-5">
                 <div class="card-body py-5">
                   <h2 class="h3 text-gray-800 mb-4">Dołącz do naszej platformy</h2>
                   
-                  <!-- Korzyści -->
                   <div class="row g-4 mb-5">
                     <div class="col-md-4">
                       <div class="d-flex flex-column align-items-center">
@@ -142,7 +133,6 @@
                     </div>
                   </div>
 
-                  <!-- Przyciski logowania/rejestracji -->
                   <div class="d-flex gap-3 justify-content-center flex-wrap">
                     <%= link_to new_user_session_path, 
                           class: "btn btn-primary btn-lg px-4 d-flex align-items-center" do %>
@@ -162,7 +152,6 @@
           </div>
         <% end %>
 
-        <!-- Statystyki platformy (dla wszystkich) -->
         <div class="row justify-content-center">
           <div class="col-lg-10">
             <div class="card shadow border-0 bg-white bg-opacity-10">

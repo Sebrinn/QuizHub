@@ -1,4 +1,3 @@
-# app/policies/quiz_policy.rb
 class QuizPolicy
   attr_reader :user, :record
 
@@ -12,9 +11,7 @@ class QuizPolicy
   end
 
   def show?
-    # Uczeń nie może widzieć szczegółów quizu przed rozpoczęciem
     if user.student?
-      # Student może zobaczyć quiz tylko jeśli już go rozwiązał
       record.quiz_results.where(user: user).exists? || record.status == :finished
     else
       @user.admin? || record.classroom.member?(@user)
@@ -98,10 +95,8 @@ end
       if @user.admin?
         @scope.all
       elsif @user.teacher?
-        # Nauczyciele widzą quizy z klas których są nauczycielami
         @scope.joins(:classroom).where(classrooms: { teacher_id: @user.id })
       elsif @user.student?
-        # Studenci widzą quizy z klas do których należą
         @scope.joins(:classroom)
               .where(classrooms: {
                 id: Classroom.joins(:classroom_memberships)

@@ -1,4 +1,3 @@
-# config/routes.rb
 Rails.application.routes.draw do
   namespace :admin do
     resources :invitations, only: [ :index, :new, :create, :destroy ]

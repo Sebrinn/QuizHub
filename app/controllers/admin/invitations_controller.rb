@@ -1,4 +1,3 @@
-# app/controllers/admin/invitations_controller.rb
 class Admin::InvitationsController < ApplicationController
   before_action :authenticate_user!
 
@@ -26,7 +25,6 @@ def create
     puts @invitation.errors.full_messages
     puts "======================="
 
-    # DEBUG: Wyświetl błędy użytkownikowi
     flash.now[:alert] = "Błędy: #{@invitation.errors.full_messages.join(', ')}"
     render :new
   end

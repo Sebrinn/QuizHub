@@ -6,7 +6,6 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -15,7 +14,6 @@
   </head>
 
   <body class="bg-light d-flex flex-column min-vh-100">
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
       <div class="container">
         <%= link_to root_path, class: "navbar-brand d-flex align-items-center fw-bold" do %>
@@ -30,7 +28,6 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <% if user_signed_in? %>
-              <!-- Menu dla zalogowanych użytkowników -->
               <li class="nav-item">
                 <%= link_to classrooms_path, class: "nav-link d-flex align-items-center" do %>
                   <%= icon('book-open', size: 'sm', css_class: 'me-1') %>
@@ -38,7 +35,6 @@
                 <% end %>
               </li>
               
-              <!-- Dropdown admina -->
               <% if policy(:invitation).index? || policy(:user).index? %>
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
@@ -66,7 +62,6 @@
                 </li>
               <% end %>
 
-              <!-- Dropdown użytkownika -->
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
                   <%= icon('user-circle', size: 'sm', css_class: 'me-1') %>
@@ -91,7 +86,6 @@
                 </ul>
               </li>
             <% else %>
-              <!-- Menu dla niezalogowanych -->
               <li class="nav-item">
                 <%= link_to new_user_session_path, class: "nav-link d-flex align-items-center" do %>
                   <%= icon('login', size: 'sm', css_class: 'me-1') %>
@@ -110,7 +104,6 @@
       </div>
     </nav>
 
-    <!-- Flash messages -->
     <% if notice || alert %>
       <div class="container mt-3">
         <% if notice %>
@@ -131,12 +124,10 @@
       </div>
     <% end %>
 
-    <!-- Main content -->
     <main class="container my-4 flex-grow-1">
       <%= yield %>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-dark text-light py-5 mt-auto">
       <div class="container">
         <div class="row gy-4">
@@ -184,7 +175,6 @@
     </footer>
 
 
-    <!-- SVG Sprite dla ikon -->
     <%= render 'shared/icons' if controller_name != 'devise/sessions' %>
   </body>
 </html>

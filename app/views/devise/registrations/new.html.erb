@@ -32,12 +32,10 @@
           <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "needs-validation" }, novalidate: true) do |f| %>
             <%= render "devise/shared/error_messages", resource: resource %>
             
-            <!-- Przekazanie tokenu zaproszenia -->
             <% if @invitation_token %>
               <%= f.hidden_field :invitation_token, value: @invitation_token %>
             <% end %>
 
-            <!-- Informacja o zaproszeniu -->
             <% if @invitation %>
               <div class="alert alert-success d-flex align-items-center mb-4">
                 <%= icon('envelope-open', size: 'lg', css_class: 'me-3 flex-shrink-0 text-success') %>
@@ -155,7 +153,6 @@
         </div>
       </div>
 
-      <!-- Informacje o korzyściach -->
       <div class="card shadow-sm border-0 mt-4">
         <div class="card-header bg-white py-3">
           <h6 class="mb-0 d-flex align-items-center">

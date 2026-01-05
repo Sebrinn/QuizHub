@@ -40,7 +40,6 @@ class AiQuestionsController < ApplicationController
 
       puts "DEBUG: Generating question #{i + 1}/#{count} of type: #{question_type}"
 
-      # Określ typ pytania na podstawie wyboru użytkownika
       current_type = case question_type
       when "mixed"
                       i.even? ? "multiple_choice" : "open_ended"
@@ -182,7 +181,6 @@ class AiQuestionsController < ApplicationController
 
     question = question_data.deep_symbolize_keys
 
-    # Dla pytań wielokrotnego wyboru - upewnij się, że są odpowiedzi
     if question[:question_type] == "multiple_choice"
       if question[:answers_attributes].nil? || !question[:answers_attributes].is_a?(Array)
         question[:answers_attributes] = []
@@ -192,16 +190,14 @@ class AiQuestionsController < ApplicationController
         end
       end
     else
-      # Dla pytań otwartych - ustaw pustą tablicę odpowiedzi
       question[:answers_attributes] = []
     end
 
     question[:content] ||= "Brak treści pytania"
     question[:question_type] ||= "multiple_choice"
 
-    # Dodaj max_score dla pytań otwartych
     if question[:question_type] == "open_ended"
-      question[:max_score] ||= 5 # Domyślnie 5 punktów za pytanie otwarte
+      question[:max_score] ||= 5
     end
 
     question
